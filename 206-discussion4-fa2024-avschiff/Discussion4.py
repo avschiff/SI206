@@ -16,13 +16,12 @@ class Rectangle():
         return float(area)
 
     # Create the "__eq__" method
-    # 
     # Returns a boolean value
-
-    # YOUR CODE HERE
-
-
-    
+    def __eq__(self, other):
+        if self.width == other.width & self.height == other.height:
+            return True
+        else:
+            return False
 
 
 def main():
