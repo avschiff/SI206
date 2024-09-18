@@ -7,18 +7,18 @@ class Rectangle():
         self.height = height
 
     # Create the "__str__" method
-    def __str__():
+    def __str__(self):
         return f"A rectangle with width {self.width} and height {self.height}"
 
     # Create the "area_calculator" method
-    def area_calculator(self, width, height):
+    def area_calculator(self):
         area = self.width*self.height
         return float(area)
 
     # Create the "__eq__" method
     # Returns a boolean value
     def __eq__(self, other):
-        if self.width == other.width & self.height == other.height:
+        if self.width == other.width and self.height == other.height:
             return True
         else:
             return False
