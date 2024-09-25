@@ -2,10 +2,15 @@
 # Your name: Avery Schiff
 # Your student id: 35947681
 # Your email: avschiff@umich.edu
-# Who or what you worked with on this homework (including generative AI like ChatGPT):
+# Who or what you worked with on this homework (including generative AI like ChatGPT): some ChatGPT help
 # If you worked with generative AI also add a statement for how you used it.  
-# e.g.: 
-# Asked Chatgpt hints for debugging and suggesting the general sturcture of the code
+"""
+I asked ChatGPT for the general structure of some of the lines of code and for help debugging each
+of my functions. For example, I used ChatGPT to help structure some lines of code in the process_request
+function because I was unsure how to format these lines. I also used it to help with the 3 scenarios
+because I needed to ensure I was writing each request in the right format. Overall, chatGPT just helped with
+minor fixes and debugging throughout the process! I have noted the lines for which it was used.
+"""
 
 # --- ARGUMENTS & EXPECTED RETURN VALUES PROVIDED --- #
 # --- SEE INSTRUCTIONS FOR FULL DETAILS ON METHOD IMPLEMENTATION --- #
