@@ -182,8 +182,10 @@ class Vendor:
         
         RETURNS: None
         '''
-        pass
-
+        if service_obj in self.capacity:
+            self.capacity[service_obj] += duration
+        else:
+            self.capacity[service_obj] = duration
 
     def process_request(self, request):
         '''
