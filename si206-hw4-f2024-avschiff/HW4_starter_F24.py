@@ -160,7 +160,15 @@ class Vendor:
         EXTRA CREDIT: If the user works for the vendor, then they receive a 20% discount
         on the service. They also still pay the 50% surcharge for priority requests.
         '''
-        pass
+        base_cost = service_obj.price * duration
+        
+        if priority:
+            base_cost *= 1.5  #50% surcharge
+        
+        if user.employer_id == self.vendor_id:
+            base_cost *= 0.8  #20% discount
+
+        return base_cost
 
 
     def add_duration(self, service_obj, duration):
