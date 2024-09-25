@@ -97,8 +97,9 @@ class TestAllMethods(unittest.TestCase):
 	## Check to see whether you can add an item to the warehouse
 	def test_add_item(self):
 		w1 = Warehouse()
-		pass
-
+        w1.add_item(self.item1)
+    	self.assertIn(self.item1, w1.items)
+        self.assertEqual(len(w1.items), 1)
 
 	## Check to see whether warehouse correctly returns the item with the most stock
 	def test_warehouse_max_stock(self):
