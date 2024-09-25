@@ -66,7 +66,20 @@ class User:
 
         RETURNS: a Boolean value (True or False)
         '''
-        pass
+        total_cost = 0
+        for service, details in request.items(): #help from chatGPT
+            cost = vendor.calculate_service_cost(service, details["duration"], details["priority"], self) #help from ChatGPT
+            total_cost += cost
+        
+        if self.account < total_cost:
+            return False
+        
+        if vendor.process_request(request):
+            self.account -= total_cost
+            vendor.accept_payment(total_cost)
+            return True
+        
+        return False
 
 
 class Service:
