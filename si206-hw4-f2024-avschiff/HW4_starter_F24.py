@@ -197,8 +197,15 @@ class Vendor:
 
         RETURNS: a Boolean value (True or False)
         '''
-        pass
-
+        for service, details in request.items(): #help from ChatGPT
+            requested_duration = details["duration"]
+            
+            if service not in self.capacity or self.capacity[service] < requested_duration: #help from ChatGPT
+                return False
+            
+            self.capacity[service] -= requested_duration
+        
+        return True
 
 class TestAllMethods(unittest.TestCase):
 
