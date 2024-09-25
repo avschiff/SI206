@@ -295,11 +295,17 @@ class TestAllMethods(unittest.TestCase):
         services_r_us.add_duration(self.babysitting, 10)
         services_r_us.add_duration(self.cleaning, 15)
 
-        # Scenario 1: user doesn't have enough credits in their account
+        # Scenario 1: user doesn't have enough credits in their account (help from chat)
+        request_1 = {self.babysitting: {"duration": 3, "priority": False}}
+        self.assertFalse(pam.request_service(services_r_us, request_1))
 
-        # Scenario 2: vendor doesn't have enough capacity left
+        # Scenario 2: vendor doesn't have enough capacity left (help from chat)
+        request_2 = {self.cleaning: {"duration": 16, "priority": False}}
+        self.assertFalse(pam.request_service(services_r_us, request_2))
 
-        # Scenario 3: vendor doesn't offer that service type
+        # Scenario 3: vendor doesn't offer that service type (help from chat)
+        request_3 = {self.tutoring: {"duration": 2, "priority": False}}
+        self.assertFalse(pam.request_service(services_r_us, request_3))
 
     # Fix the test cases for test_user_request_service_2
     def test_user_request_service_2(self):
@@ -318,8 +324,8 @@ class TestAllMethods(unittest.TestCase):
                 "priority": True
             }}
         ))
-        self.assertAlmostEqual(ali.account, 15, 2)  
-        self.assertAlmostEqual(dunder_services.income, 0, 2)
+        self.assertAlmostEqual(ali.account, 20, 2)  
+        self.assertAlmostEqual(dunder_services.income, 280, 2)
 
 
 def main():
