@@ -22,14 +22,14 @@ def load_csv(f):
 
     result = {}
 
-    file = open(full_path, 'r', newline='')
+    file = open(full_path, 'r', newline='') #help from chatGPT
     reader = csv.reader(file)
     header = next(reader)
     years = header[1:]
 
     for row in reader:
         month = row[0]
-        for i, value in enumerate(row[1:]):
+        for i, value in enumerate(row[1:]): #help from chatGPT
             year = years[i]
             if year not in result:
                 result[year] = {}
@@ -73,7 +73,7 @@ def get_month_avg(d):
     '''
     averages = {}
     for year, months in d.items():
-        total = sum(int(value) for value in months.values())
+        total = sum(int(value) for value in months.values()) #help from chatGPT
         avg = round(total / len(months))
         averages[year] = avg
     
