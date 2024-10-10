@@ -35,8 +35,16 @@ def split_by_hire_year(employees, split_year):
     """
     Split employee data into two dictionaries based on hire year.
     """
-    pass
+    before_split = {}
+    after_split = {}
+
+    for emp_id, data in employees.items():
+        if data['hire_year'] < split_year:
+            before_split[emp_id] = data
+        else:
+            after_split[emp_id] = data
     
+    return before_split, after_split    
 
 def count_race_or_gender(employees):
     """
