@@ -113,35 +113,48 @@ class TestEmployeeDataAnalysis(unittest.TestCase):
         - Feel free to use 'smaller_dataset.csv' for your test cases so that you can verify 
         the correect output. 
         """
-    
-    pass
+
+        self.filename = '/Users/averyschiff/Documents/SI206/project1-fall24-avschiff/smaller_dataset.csv' #Using only "smaller_dataset.csv" does not work
+        self.employees = csv_reader(self.filename)
 
     def test_load_csv(self):
         # Your test code for load_csv goes here
-        pass
+        employees = csv_reader(self.filename)
+        self.assertIsInstance(employees, dict)
+        self.assertGreater(len(employees), 0)
 
     def test_split_by_hire_year(self):
         # Your test code for split_by_hire_year goes here
-        pass
+        before, after = split_by_hire_year(self.employees, 1964) #help from AI
+        self.assertIsInstance(before, dict)
+        self.assertIsInstance(after, dict)
+        self.assertGreater(len(before), 0)
+        self.assertGreater(len(after), 0)
 
     def test_count_race_or_gender(self):
         # Your test code for count_race_or_gender goes here
-        pass
+        counts = count_race_or_gender(self.employees)
+        self.assertIsInstance(counts, dict)
+        self.assertIn('race', counts)
+        self.assertIn('gender', counts)
 
     def test_count_race_and_gender(self):
         # Your test code for count_race_and_gender goes here
-        pass
+        combined_counts = count_race_and_gender(self.employees)
+        self.assertIsInstance(combined_counts, dict) #help from AI
+        self.assertGreater(len(combined_counts), 0)
 
     def test_reduce_company_costs(self):
         # Your test code for reduce_company_costs goes here
-        pass
-
+        reduced_employees = reduce_company_costs(self.employees, 0.2)
+        self.assertLess(len(reduced_employees), len(self.employees))
+        self.assertIsInstance(reduced_employees, dict)
 
 
 
 def main():
     # Load employee data from the CSV file
-    employee_data = csv_reader('GM_employee_data.csv')
+    employee_data = csv_reader('/Users/averyschiff/Documents/SI206/project1-fall24-avschiff/GM_employee_data.csv') #just using "GM_employee_data.csv" does not work for me
 
     # Task 1: Split employees by hire year
     employees_before_1964, employees_after_1964 = split_by_hire_year(employee_data, 1964)
@@ -194,9 +207,8 @@ def main():
 
 
 
-if __name__ == "__main__":
-    # Uncomment the following line to run the unittests
-    # unittest.main(verbosity=2)
-    
+if __name__ == "__main__":    
     main()
+    unittest.main(verbosity=2)
+
 
