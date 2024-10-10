@@ -66,8 +66,13 @@ def count_race_and_gender(employees):
     """
     Count the number of employees within each combination of race and gender.
     """
-    pass
+    combined_counts = {}
 
+    for data in employees.values():
+        combination = f"{data['race']}&{data['gender']}"
+        combined_counts[combination] = combined_counts.get(combination, 0) + 1
+
+    return combined_counts
 
 def csv_writer(data, filename):
     """
