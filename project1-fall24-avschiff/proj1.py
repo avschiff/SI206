@@ -78,8 +78,15 @@ def csv_writer(data, filename):
     """
     Write data to a CSV file.
     """
-    pass
+    outFile = open(filename, mode='w', newline='')
+    writer = csv.writer(outFile)
+    
+    writer.writerow(['Combination', 'Count'])
+    
+    for key, value in data.items():
+        writer.writerow([key, value])
 
+    outFile.close()
 
 def reduce_company_costs(employees, target_reduction):
     """
