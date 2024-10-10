@@ -93,15 +93,21 @@ def reduce_company_costs(employees, target_reduction):
     EXTRA CREDIT OPTION ONE
     Create your own algorithm to reduce company payroll costs. 
     """
-    sorted_employees = sorted(employees.items(), key=lambda x: x[1]['hire_year'], reverse=True) #help from AI
-    reduced_employees = {}
-    
-    current_count = len(employees)
-    reduction_count = int(target_reduction * current_count)
+    total_payroll = sum(data.get('salary', 0) for data in employees.values()) #help from AI
+    reduced_employees = {emp_id: data for emp_id, data in employees.items() if data.get('salary', 0) >= 5000} #help from AI
 
-    for i, (emp_id, data) in enumerate(sorted_employees): #help from AI
-        if i < current_count - reduction_count:
-            reduced_employees[emp_id] = data
+    current_payroll = total_payroll
+    reduction_amount = 0
+
+    while reduction_amount < target_reduction:
+        sorted_employees = sorted(reduced_employees.items(), key=lambda x: x[1]['salary'])
+        if not sorted_employees:
+            break
+        emp_id, data = sorted_employees[0]
+        salary_to_reduce = data['salary']
+        del reduced_employees[emp_id] #help from AI
+        current_payroll -= salary_to_reduce
+        reduction_amount += salary_to_reduce
 
     return reduced_employees
 
@@ -117,11 +123,21 @@ class TestEmployeeDataAnalysis(unittest.TestCase):
         self.filename = '/Users/averyschiff/Documents/SI206/project1-fall24-avschiff/smaller_dataset.csv' #Using only "smaller_dataset.csv" does not work
         self.employees = csv_reader(self.filename)
 
+        #create a set of random salaries and assign them to people in the smaller dataset
+        predefined_salaries = [
+            1000, 20000, 40000, 60000, 80000, 100000,
+            15000, 25000, 35000, 45000, 55000, 65000,
+            75000, 85000, 95000
+        ]
+        for i, emp_id in enumerate(self.employees):
+            self.employees[emp_id]['salary'] = predefined_salaries[i % len(predefined_salaries)] #help from AI
+
     def test_load_csv(self):
         # Your test code for load_csv goes here
         employees = csv_reader(self.filename)
         self.assertIsInstance(employees, dict)
         self.assertGreater(len(employees), 0)
+        self.assertIn('gender', employees[list(employees.keys())[0]])
 
     def test_split_by_hire_year(self):
         # Your test code for split_by_hire_year goes here
@@ -130,6 +146,10 @@ class TestEmployeeDataAnalysis(unittest.TestCase):
         self.assertIsInstance(after, dict)
         self.assertGreater(len(before), 0)
         self.assertGreater(len(after), 0)
+        for emp in before.values():
+            self.assertLess(emp['hire_year'], 1964)
+        for emp in after.values():
+            self.assertGreaterEqual(emp['hire_year'], 1964)
 
     def test_count_race_or_gender(self):
         # Your test code for count_race_or_gender goes here
@@ -137,19 +157,30 @@ class TestEmployeeDataAnalysis(unittest.TestCase):
         self.assertIsInstance(counts, dict)
         self.assertIn('race', counts)
         self.assertIn('gender', counts)
+        self.assertEqual(counts['race']['White'], 13)
+        self.assertEqual(counts['gender']['Male'], 9)
 
     def test_count_race_and_gender(self):
         # Your test code for count_race_and_gender goes here
         combined_counts = count_race_and_gender(self.employees)
         self.assertIsInstance(combined_counts, dict) #help from AI
         self.assertGreater(len(combined_counts), 0)
+        self.assertIn('Black&Female', combined_counts)
+        self.assertEqual(combined_counts['Black&Female'], 6)
 
     def test_reduce_company_costs(self):
         # Your test code for reduce_company_costs goes here
-        reduced_employees = reduce_company_costs(self.employees, 0.2)
-        self.assertLess(len(reduced_employees), len(self.employees))
-        self.assertIsInstance(reduced_employees, dict)
+        target_reduction = 5000000
+        reduced_employees = reduce_company_costs(self.employees, target_reduction)
+    
+        for emp_id, emp_data in reduced_employees.items():
+            self.assertGreaterEqual(emp_data['salary'], 5000)
 
+        new_payroll = sum(emp['salary'] for emp in reduced_employees.values())
+
+        initial_payroll = sum(emp['salary'] for emp in self.employees.values())
+
+        self.assertLessEqual(initial_payroll - new_payroll, target_reduction)
 
 
 def main():
