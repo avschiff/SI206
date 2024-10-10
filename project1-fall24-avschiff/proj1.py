@@ -50,8 +50,17 @@ def count_race_or_gender(employees):
     """
     Count the number of employees belonging to each race and gender category.
     """
-    pass
+    race_counts = {}
+    gender_counts = {}
 
+    for data in employees.values():
+        race = data['race']
+        race_counts[race] = race_counts.get(race, 0) + 1
+
+        gender = data['gender']
+        gender_counts[gender] = gender_counts.get(gender, 0) + 1
+
+    return {'race': race_counts, 'gender': gender_counts}
 
 def count_race_and_gender(employees):
     """
