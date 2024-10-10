@@ -93,8 +93,17 @@ def reduce_company_costs(employees, target_reduction):
     EXTRA CREDIT OPTION ONE
     Create your own algorithm to reduce company payroll costs. 
     """
-    pass
+    sorted_employees = sorted(employees.items(), key=lambda x: x[1]['hire_year'], reverse=True) #help from AI
+    reduced_employees = {}
+    
+    current_count = len(employees)
+    reduction_count = int(target_reduction * current_count)
 
+    for i, (emp_id, data) in enumerate(sorted_employees): #help from AI
+        if i < current_count - reduction_count:
+            reduced_employees[emp_id] = data
+
+    return reduced_employees
 
 class TestEmployeeDataAnalysis(unittest.TestCase):
 
