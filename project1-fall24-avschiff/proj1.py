@@ -22,11 +22,17 @@ def csv_reader(filename):
 
     for row in csv_reader:
         emp_id = row[0]
-        employees[emp_id] = {
+        employee_data = {
             'gender': row[1],
             'race': row[2],
             'hire_year': int(row[3])
         }
+        
+        if len(row) > 4: #added to handle extra credit csv
+            employee_data['role'] = row[4]
+            employee_data['salary'] = float(row[5])
+
+        employees[emp_id] = employee_data
     
     inFile.close()
     return employees    
@@ -94,20 +100,23 @@ def reduce_company_costs(employees, target_reduction):
     Create your own algorithm to reduce company payroll costs. 
     """
     total_payroll = sum(data.get('salary', 0) for data in employees.values()) #help from AI
-    reduced_employees = {emp_id: data for emp_id, data in employees.items() if data.get('salary', 0) >= 5000} #help from AI
+    reduced_employees = {}
+    sorted_employees = sorted(employees.items(), key=lambda x: x[1]['salary']) #help from AI
+    current_reduction = 0
 
-    current_payroll = total_payroll
-    reduction_amount = 0
-
-    while reduction_amount < target_reduction:
-        sorted_employees = sorted(reduced_employees.items(), key=lambda x: x[1]['salary'])
-        if not sorted_employees:
-            break
-        emp_id, data = sorted_employees[0]
-        salary_to_reduce = data['salary']
-        del reduced_employees[emp_id] #help from AI
-        current_payroll -= salary_to_reduce
-        reduction_amount += salary_to_reduce
+    for emp_id, data in sorted_employees:
+        salary = data.get('salary', 0)
+        if salary == 0:
+            continue
+        if current_reduction < target_reduction:
+            potential_new_salary = salary - (target_reduction - current_reduction)
+            if potential_new_salary < 5000:
+                potential_new_salary = 5000
+            actual_reduction = salary - potential_new_salary
+            current_reduction += actual_reduction
+            reduced_employees[emp_id] = {**data, 'salary': potential_new_salary} #learned **data from AI
+        else:
+            reduced_employees[emp_id] = data
 
     return reduced_employees
 
@@ -123,14 +132,8 @@ class TestEmployeeDataAnalysis(unittest.TestCase):
         self.filename = '/Users/averyschiff/Documents/SI206/project1-fall24-avschiff/smaller_dataset.csv' #Using only "smaller_dataset.csv" does not work
         self.employees = csv_reader(self.filename)
 
-        #create a set of random salaries and assign them to people in the smaller dataset
-        predefined_salaries = [
-            1000, 20000, 40000, 60000, 80000, 100000,
-            15000, 25000, 35000, 45000, 55000, 65000,
-            75000, 85000, 95000
-        ]
-        for i, emp_id in enumerate(self.employees):
-            self.employees[emp_id]['salary'] = predefined_salaries[i % len(predefined_salaries)] #help from AI
+        self.extra_credit_filename = '/Users/averyschiff/Documents/SI206/project1-fall24-avschiff/GM_employee_data_extra_credit.csv'
+        self.employees_extra_credit = csv_reader(self.extra_credit_filename)
 
     def test_load_csv(self):
         # Your test code for load_csv goes here
@@ -171,14 +174,13 @@ class TestEmployeeDataAnalysis(unittest.TestCase):
     def test_reduce_company_costs(self):
         # Your test code for reduce_company_costs goes here
         target_reduction = 5000000
-        reduced_employees = reduce_company_costs(self.employees, target_reduction)
-    
+        reduced_employees = reduce_company_costs(self.employees_extra_credit, target_reduction)
+
         for emp_id, emp_data in reduced_employees.items():
             self.assertGreaterEqual(emp_data['salary'], 5000)
 
         new_payroll = sum(emp['salary'] for emp in reduced_employees.values())
-
-        initial_payroll = sum(emp['salary'] for emp in self.employees.values())
+        initial_payroll = sum(emp['salary'] for emp in self.employees_extra_credit.values())
 
         self.assertLessEqual(initial_payroll - new_payroll, target_reduction)
 
