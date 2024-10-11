@@ -80,7 +80,7 @@ def count_race_and_gender(employees):
     combined_counts = {}
 
     for data in employees.values():
-        combination = f"{data['race']}&{data['gender']}"
+        combination = f"{data['race']}_{data['gender']}"
         combined_counts[combination] = combined_counts.get(combination, 0) + 1
 
     return combined_counts
@@ -160,13 +160,17 @@ class TestEmployeeDataAnalysis(unittest.TestCase):
     def test_load_csv(self):
         # Your test code for load_csv goes here
         employees = csv_reader(self.filename)
+        first_employee = employees[list(employees.keys())[0]] 
+
         self.assertIsInstance(employees, dict)
         self.assertGreater(len(employees), 0)
-        self.assertIn('gender', employees[list(employees.keys())[0]])
+        self.assertIn('gender', first_employee)
+        self.assertEqual(len(employees), 20)
+        self.assertEqual(len(first_employee), 3)
 
     def test_split_by_hire_year(self):
         # Your test code for split_by_hire_year goes here
-        before, after = split_by_hire_year(self.employees, 1964) #help from AI
+        before, after = split_by_hire_year(self.employees, 1964)
         self.assertIsInstance(before, dict)
         self.assertIsInstance(after, dict)
         self.assertGreater(len(before), 0)
@@ -176,22 +180,38 @@ class TestEmployeeDataAnalysis(unittest.TestCase):
         for emp in after.values():
             self.assertGreaterEqual(emp['hire_year'], 1964)
 
+        before, after = split_by_hire_year(self.employees, 1970)
+        self.assertIsInstance(before, dict)
+        self.assertIsInstance(after, dict)
+        self.assertGreater(len(before), 0)
+        self.assertGreater(len(after), 0)
+        for emp in before.values():
+            self.assertLess(emp['hire_year'], 1970)
+        for emp in after.values():
+            self.assertGreaterEqual(emp['hire_year'], 1970)
+
     def test_count_race_or_gender(self):
         # Your test code for count_race_or_gender goes here
         counts = count_race_or_gender(self.employees)
         self.assertIsInstance(counts, dict)
         self.assertIn('race', counts)
         self.assertIn('gender', counts)
+        self.assertEqual(len(counts), 2)
         self.assertEqual(counts['race']['White'], 13)
         self.assertEqual(counts['gender']['Male'], 9)
 
     def test_count_race_and_gender(self):
         # Your test code for count_race_and_gender goes here
         combined_counts = count_race_and_gender(self.employees)
-        self.assertIsInstance(combined_counts, dict) #help from AI
+        expected_keys = ['White_Female','Black_Female','White_Male','Black_Female']
+
+        self.assertEqual(len(combined_counts), len(expected_keys))
+        self.assertIsInstance(combined_counts, dict)
         self.assertGreater(len(combined_counts), 0)
-        self.assertIn('Black&Female', combined_counts)
-        self.assertEqual(combined_counts['Black&Female'], 6)
+        self.assertIn('Black_Female', combined_counts)
+        self.assertIn('White_Male', combined_counts)
+        self.assertEqual(combined_counts['Black_Female'], 6)
+        self.assertEqual(combined_counts['White_Male'], 8)
 
     def test_reduce_company_costs(self):
         # Your test code for reduce_company_costs goes here
