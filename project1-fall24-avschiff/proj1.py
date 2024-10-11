@@ -1,10 +1,15 @@
 # Your name: Avery Schiff
 # Your student id: 35947681
 # Your email: avschiff@umich.edu
-# Who or what you worked with on this homework (including generative AI like ChatGPT): 
+# Who or what you worked with on this homework (including generative AI like ChatGPT): ChatGPT
 # If you worked with generative AI also add a statement for how you used it.
-# e.g.: 
-# Asked Chatgpt hints for debugging and suggesting the general sturcture of the code 
+'''
+I used ChatGPT for help with specific lines of code and to debug when I was unsure of what was wrong
+with my code. From ChatGPT, I learned how **data works to unpack all the key-value pairs from the data
+dictionary. Mostly, ChatGPT helped debug my reduce_company_costs function as well as the test that goes
+along with it. I also was able to debug other aspects of my code when they didn't work and ensure that all
+criteria was met by using ChatGPT. I have noted every location in the code that utilized AI.
+'''
 
 
 import csv
@@ -123,7 +128,7 @@ def reduce_company_costs(employees, target_reduction):
         if salary > 0:
             actual_reduction = min(salary, target_reduction - current_reduction)
             new_salary = max(salary - actual_reduction, 5000)
-            reduced_employees[emp_id] = {**data, 'salary': new_salary} #help from AI
+            reduced_employees[emp_id] = {**data, 'salary': new_salary} #help from AI to learn **data
             current_reduction += (salary - new_salary)
 
     for emp_id, data in employees.items():
