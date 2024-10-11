@@ -8,7 +8,7 @@ I used ChatGPT for help with specific lines of code and to debug when I was unsu
 with my code. From ChatGPT, I learned how **data works to unpack all the key-value pairs from the data
 dictionary. Mostly, ChatGPT helped debug my reduce_company_costs function as well as the test that goes
 along with it. I also was able to debug other aspects of my code when they didn't work and ensure that all
-criteria was met by using ChatGPT. I have noted every location in the code that utilized AI.
+criteria was met by using ChatGPT. I have noted every location in this code that utilized AI.
 '''
 
 
