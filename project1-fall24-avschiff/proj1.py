@@ -101,24 +101,41 @@ def reduce_company_costs(employees, target_reduction):
     """
     total_payroll = sum(data.get('salary', 0) for data in employees.values()) #help from AI
     reduced_employees = {}
-    sorted_employees = sorted(employees.items(), key=lambda x: x[1]['salary']) #help from AI
     current_reduction = 0
 
-    for emp_id, data in sorted_employees:
+    role_groups = {}
+    for emp_id, data in employees.items():
+        role = data.get('role', 'No Role')
+        if role not in role_groups:
+            role_groups[role] = []
+        role_groups[role].append((emp_id, data))
+
+    sorted_employees = []
+    for role, group in role_groups.items():
+        group.sort(key=lambda x: x[1]['salary']) #help from AI
+        sorted_employees.extend(group)
+
+    for emp_id, data in sorted_employees: #help from AI
+        if current_reduction >= target_reduction:
+            break
+
         salary = data.get('salary', 0)
-        if salary == 0:
-            continue
-        if current_reduction < target_reduction:
-            potential_new_salary = salary - (target_reduction - current_reduction)
-            if potential_new_salary < 5000:
-                potential_new_salary = 5000
-            actual_reduction = salary - potential_new_salary
-            current_reduction += actual_reduction
-            reduced_employees[emp_id] = {**data, 'salary': potential_new_salary} #learned **data from AI
-        else:
+        if salary > 0:
+            actual_reduction = min(salary, target_reduction - current_reduction)
+            new_salary = max(salary - actual_reduction, 5000)
+            reduced_employees[emp_id] = {**data, 'salary': new_salary} #help from AI
+            current_reduction += (salary - new_salary)
+
+    for emp_id, data in employees.items():
+        if emp_id not in reduced_employees:
             reduced_employees[emp_id] = data
 
+    for key, value in reduced_employees.items(): #help from AI to debug
+        if value['salary'] > 0:
+            reduced_employees[key] = value
+
     return reduced_employees
+
 
 class TestEmployeeDataAnalysis(unittest.TestCase):
 
@@ -184,6 +201,25 @@ class TestEmployeeDataAnalysis(unittest.TestCase):
 
         self.assertLessEqual(initial_payroll - new_payroll, target_reduction)
 
+        original_counts = {}
+        for emp in self.employees_extra_credit.values():
+            role = emp['role']
+            if role in original_counts:
+                original_counts[role] += 1
+            else:
+                original_counts[role] = 1
+                
+        reduced_counts = {}
+        for emp in reduced_employees.values():
+            role = emp['role']
+            if role in reduced_counts:
+                reduced_counts[role] += 1
+            else:
+                reduced_counts[role] = 1
+        
+        tolerance = 1
+        for role in original_counts.keys():
+            self.assertLessEqual(abs(original_counts[role] - reduced_counts[role]), tolerance, f"Role '{role}' removed employees not within the acceptable tolerance.") #help from AI
 
 def main():
     # Load employee data from the CSV file
@@ -240,7 +276,7 @@ def main():
 
 
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     main()
     unittest.main(verbosity=2)
 
