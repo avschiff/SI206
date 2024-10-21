@@ -1,8 +1,16 @@
-# Name: 
-# Student ID: 
-# Email: 
-# List who you have worked with on this homework: 
+# Name: Avery Schiff
+# Student ID: 35947681
+# Email: avschiff@umich.edu
+# List who you have worked with on this homework: ChatGPT
 # List any AI tool (e.g. ChatGPT, GitHub Copilot): 
+"""
+I used ChatGPT to help with creating test cases, reducing the amount of warnings in my output,
+and overall debugging. For example, I was getting a lot of warnings when I ran my code, even though
+my tests were working. With ChatGPT's help, I used "import warnings" to clean up my output. Also, I
+learned about ignorecase from ChatGPT to ensure my output was not case sensitive. I also used AI to create
+"bad user info" for my extra credit test case. Overall, ChatGPT only helped with the minor issues in my code.
+Everywhere that I utilized AI is noted in the code.
+"""
 
 import re
 import os
@@ -51,7 +59,7 @@ def create_age_dict(user_data: list) -> dict:
     user_dict = {}
     for user in user_data:
         username_match = re.search(r'@cc0uNT:(\w+)', user)
-        birthday_match = re.search(r'Birthday:\s*(\d{2}/\d{2}/\d{4})', user, re.IGNORECASE)
+        birthday_match = re.search(r'Birthday:\s*(\d{2}/\d{2}/\d{4})', user, re.IGNORECASE) #learned ignorecase from AI
         
         if username_match and birthday_match:
             username = username_match.group(1)
@@ -181,10 +189,7 @@ class TestAllFunc(unittest.TestCase):
     def test_create_age_dict(self):
         user_data = get_user_info(self.test_files["test2.txt"])
 
-        expected_result = {
-            'janeaccount': ('06/28/2003', 21),
-            'johnbanking': ('04/05/2004', 20)
-        }
+        expected_result = {'janeaccount': ('06/28/2003', 21),'johnbanking': ('04/05/2004', 20)}
 
         result = create_age_dict(user_data)
         self.assertEqual(result, expected_result)
@@ -224,7 +229,7 @@ class TestAllFunc(unittest.TestCase):
         result = validate_michigan_number(user_data)
         self.assertEqual(result, expected_result)
 
-        bad_user_data = ["username: someone\n@cc0uNT:someone\nbirthday seems to be 01/01/2000\ncheckEMAIL: someone@domain.com\ncheckphone: 123-456-7890"]
+        bad_user_data = ["username: someone\n@cc0uNT:someone\nbirthday seems to be 01/01/2000\ncheckEMAIL: someone@domain.com\ncheckphone: 123-456-7890"] #generated using AI
         result = validate_michigan_number(bad_user_data)
         self.assertEqual(result, [])
 
