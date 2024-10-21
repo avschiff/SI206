@@ -85,9 +85,12 @@ def sort_email_domain(user_data: list) -> dict:
     Returns:
         email_data (dict): A dictionary sorted by domain frequency in descending order.
     """
-    # TODO: implement this function
-    pass
-
+    domain_count = {}
+    for user in user_data:
+        email = re.search(r'checkEMAIL\s([\w\.\-]+@[\w\.\-]+)', user).group(1)
+        domain = email.split('@')[1]
+        domain_count[domain] = domain_count.get(domain, 0) + 1
+    return dict(sorted(domain_count.items(), key=lambda x: x[1], reverse=True))
 
 ################## EXTRA CREDIT ##################
 def validate_michigan_number(user_data: list) -> list:
