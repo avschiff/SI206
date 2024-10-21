@@ -143,25 +143,74 @@ class TestAllFunc(unittest.TestCase):
             f.write('\n\n'.join(sample_data))
 
     def test_get_user_info(self):
-        # TODO: implement this test case
-        pass
+        expected_result = [
+            "username: janeaccount\nP455W0RD: janeaccount123\n@cc0uNT:janeaccount\nbirthday seems to be 06/28/2003\ncheckEMAIL jane@gmail.com\ncheckphone 313-555-1234",
+            "username: johnbanking\nP455W0RD: password\n@cc0uNT:johnbanking\nbirthday seems to be 04/05/2004\ncheckEMAIL john@bank.net\ncheckphone 734-987-1234"
+        ]
+        result = get_user_info(self.test_files["test2.txt"])
+        self.assertEqual(result, expected_result)
+
+        result = get_user_info(self.test_files["test3.txt"])
+        self.assertEqual(result, [])
 
     def test_create_age_dict(self):
-        # TODO: implement this test case
-        pass
+        user_data = get_user_info(self.test_files["test2.txt"])
+
+        expected_result = {
+            'janeaccount': ('06/28/2003', 21),
+            'johnbanking': ('04/05/2004', 20)
+        }
+        result = create_age_dict(user_data)
+        self.assertEqual(result, expected_result)
+
+        result = create_age_dict([])
+        self.assertEqual(result, {})
 
     def test_check_password_strength(self):
-        # TODO: implement this test case
-        pass
+        user_data = get_user_info(self.test_files["test4.txt"])
+
+        expected_result = [
+            ('janeaccount123', 'strong'),
+            ('password', 'weak'),
+            ('Thompson!321', 'strong')
+        ]
+        result = check_password_strength(user_data)
+        self.assertEqual(result, expected_result)
+
+        bad_user_data = ["username: someone\n@cc0uNT:someone\nbirthday seems to be 01/01/2000\ncheckEMAIL some@domain.com\ncheckphone 123-456-7890"]
+        result = check_password_strength(bad_user_data)
+        self.assertEqual(result, [])
 
     def test_sort_email_domain(self):
-        # TODO: implement this test case
-        pass
+        user_data = get_user_info(self.test_files["test4.txt"])
+
+        expected_result = {
+            'gmail.com': 1,
+            'bank.net': 1,
+            'google.com': 1
+        }
+        result = sort_email_domain(user_data)
+        self.assertEqual(result, expected_result)
+
+        bad_user_data = ["username: someone\n@cc0uNT:someone\nbirthday seems to be 01/01/2000\ncheckphone 123-456-7890"]
+        result = sort_email_domain(bad_user_data)
+        self.assertEqual(result, {})
 
     ############ EXTRA CREDIT ############
     def test_validate_michigan_number(self):
-        # TODO: implement this test case
-        pass
+        user_data = get_user_info(self.test_files["test4.txt"])
+
+        expected_result = [
+            '313-555-1234',
+            '734-987-1234',
+            '313-123-4567'
+        ]
+        result = validate_michigan_number(user_data)
+        self.assertEqual(result, expected_result)
+
+        bad_user_data = ["username: someone\n@cc0uNT:someone\nbirthday seems to be 01/01/2000\ncheckEMAIL some@domain.com\ncheckphone 123-456-7890"]
+        result = validate_michigan_number(bad_user_data)
+        self.assertEqual(result, [])
 
 
 def main():
