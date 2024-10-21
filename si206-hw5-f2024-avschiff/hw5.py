@@ -28,7 +28,6 @@ def get_user_info(file_name: str) -> list:
     file.close()
     return user_info
 
-
 def create_age_dict(user_data: list) -> dict:
     """
     This function takes a list of user information strings and returns a dictionary
@@ -41,8 +40,14 @@ def create_age_dict(user_data: list) -> dict:
         age_dict (dict): A dictionary with usernames as keys and a tuple of 
                          (birthday, age) as values.
     """
-    # TODO: implement this function
-    pass
+    user_dict = {}
+    for user in user_data:
+        username = re.search(r'@cc0uNT;(\w+)', user).group(1)
+        birthday_str = re.search(r'birthday seems to be (\d{2}/\d{2}/\d{4})', user).group(1)
+        birthday = datetime.strptime(birthday_str, '%m/%d/%Y')
+        age = (datetime(2024, 10, 25) - birthday).days // 365
+        user_dict[username] = (birthday_str, age)
+    return user_dict
 
 
 def check_password_strength(user_data: list) -> tuple:
