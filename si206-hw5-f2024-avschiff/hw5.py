@@ -49,7 +49,6 @@ def create_age_dict(user_data: list) -> dict:
         user_dict[username] = (birthday_str, age)
     return user_dict
 
-
 def check_password_strength(user_data: list) -> tuple:
     """
     This function evaluates each user's password strength and returns a tuple containing
@@ -61,9 +60,19 @@ def check_password_strength(user_data: list) -> tuple:
     Returns:
         password_strengths (tuple): A tuple with passwords and their strength classification.
     """
-    # TODO: implement this function
-    pass
-
+    password_strengths = []
+    for user in user_data:
+        password = re.search(r'P455W0RD:([a-zA-Z0-9!@#$%^&*()]+)', user).group(1)
+        if len(password) >= 10 and re.search(r'[a-z]', password) and re.search(r'[A-Z]', password) and re.search(r'[0-9]', password) and re.search(r'[!@#$%^&*()]', password):
+            strength = 'strong'
+        elif len(password) >= 8 and re.search(r'[a-z]', password) and re.search(r'[0-9]', password):
+            strength = 'medium'
+        elif len(password) >= 6:
+            strength = 'weak'
+        else:
+            strength = 'very weak'
+        password_strengths.append((password, strength))
+    return tuple(password_strengths)
 
 def sort_email_domain(user_data: list) -> dict:
     """
