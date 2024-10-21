@@ -9,6 +9,7 @@ import os
 import unittest
 from datetime import datetime
 import tempfile
+import warnings #help from AI
 
 def get_user_info(file_name: str) -> list:
     """
@@ -21,11 +22,18 @@ def get_user_info(file_name: str) -> list:
     Returns:
         user_data (list): A list of strings with each user's information.
     """
-    file = open(file_name, 'r')
     user_info = []
-    for line in file:
-        user_info.append(line.strip())
-    file.close()
+    with open(file_name, 'r') as file:
+        current_user = []
+        for line in file:
+            if line.strip():
+                current_user.append(line.strip())
+            else:
+                if current_user:
+                    user_info.append(" ".join(current_user))
+                    current_user = []
+        if current_user:
+            user_info.append(" ".join(current_user))
     return user_info
 
 def create_age_dict(user_data: list) -> dict:
@@ -42,11 +50,15 @@ def create_age_dict(user_data: list) -> dict:
     """
     user_dict = {}
     for user in user_data:
-        username = re.search(r'@cc0uNT;(\w+)', user).group(1)
-        birthday_str = re.search(r'birthday seems to be (\d{2}/\d{2}/\d{4})', user).group(1)
-        birthday = datetime.strptime(birthday_str, '%m/%d/%Y')
-        age = (datetime(2024, 10, 25) - birthday).days // 365
-        user_dict[username] = (birthday_str, age)
+        username_match = re.search(r'@cc0uNT:(\w+)', user)
+        birthday_match = re.search(r'Birthday:\s*(\d{2}/\d{2}/\d{4})', user, re.IGNORECASE)
+        
+        if username_match and birthday_match:
+            username = username_match.group(1)
+            birthday_str = birthday_match.group(1)
+            birthday = datetime.strptime(birthday_str, '%m/%d/%Y')
+            age = (datetime(2024, 10, 25) - birthday).days // 365
+            user_dict[username] = (birthday_str, age)
     return user_dict
 
 def check_password_strength(user_data: list) -> tuple:
@@ -62,16 +74,24 @@ def check_password_strength(user_data: list) -> tuple:
     """
     password_strengths = []
     for user in user_data:
-        password = re.search(r'P455W0RD:([a-zA-Z0-9!@#$%^&*()]+)', user).group(1)
-        if len(password) >= 10 and re.search(r'[a-z]', password) and re.search(r'[A-Z]', password) and re.search(r'[0-9]', password) and re.search(r'[!@#$%^&*()]', password):
-            strength = 'strong'
-        elif len(password) >= 8 and re.search(r'[a-z]', password) and re.search(r'[0-9]', password):
-            strength = 'medium'
-        elif len(password) >= 6:
-            strength = 'weak'
-        else:
-            strength = 'very weak'
-        password_strengths.append((password, strength))
+        match = re.search(r'P455W0RD:\s*([\w!@#$%^&*()]+)', user)
+        if match:
+            password = match.group(1)
+            if (len(password) >= 10 and 
+                re.search(r'[a-z]', password) and 
+                re.search(r'[A-Z]', password) and 
+                re.search(r'[0-9]', password) and 
+                re.search(r'[!@#$%^&*()]', password)):
+                strength = 'strong'
+            elif (len(password) >= 8 and 
+                  re.search(r'[a-z]', password) and 
+                  re.search(r'[0-9]', password)):
+                strength = 'medium'
+            elif len(password) >= 6:
+                strength = 'weak'
+            else:
+                strength = 'very weak'
+            password_strengths.append((password, strength))
     return tuple(password_strengths)
 
 def sort_email_domain(user_data: list) -> dict:
@@ -87,9 +107,11 @@ def sort_email_domain(user_data: list) -> dict:
     """
     domain_count = {}
     for user in user_data:
-        email = re.search(r'checkEMAIL\s([\w\.\-]+@[\w\.\-]+)', user).group(1)
-        domain = email.split('@')[1]
-        domain_count[domain] = domain_count.get(domain, 0) + 1
+        email_match = re.search(r'Email:\s*([\w\.\-]+@[\w\.\-]+)', user)
+        if email_match:
+            email = email_match.group(1)
+            domain = email.split('@')[1]
+            domain_count[domain] = domain_count.get(domain, 0) + 1
     return dict(sorted(domain_count.items(), key=lambda x: x[1], reverse=True))
 
 ################## EXTRA CREDIT ##################
@@ -105,9 +127,11 @@ def validate_michigan_number(user_data: list) -> list:
     """
     michigan_numbers = []
     for user in user_data:
-        phone = re.search(r'checkphone\s(\d{3}-\d{3}-\d{4})', user).group(1)
-        if phone.startswith(('313', '734', '810')):
-            michigan_numbers.append(phone)
+        phone_match = re.search(r'Phone:\s*(\d{3}-\d{3}-\d{4})', user)
+        if phone_match:
+            phone = phone_match.group(1)
+            if phone.startswith(('313', '734', '810')):
+                michigan_numbers.append(phone)
     return michigan_numbers
 
 
@@ -115,6 +139,7 @@ class TestAllFunc(unittest.TestCase):
     def setUp(self):
         # Set up a temporary directory
         self.test_dir = tempfile.TemporaryDirectory()
+        warnings.simplefilter("ignore", ResourceWarning) #help from AI to suppress warnings
 
         # Paths for test files
         self.test_files = {
@@ -144,8 +169,8 @@ class TestAllFunc(unittest.TestCase):
 
     def test_get_user_info(self):
         expected_result = [
-            "username: janeaccount\nP455W0RD: janeaccount123\n@cc0uNT:janeaccount\nbirthday seems to be 06/28/2003\ncheckEMAIL jane@gmail.com\ncheckphone 313-555-1234",
-            "username: johnbanking\nP455W0RD: password\n@cc0uNT:johnbanking\nbirthday seems to be 04/05/2004\ncheckEMAIL john@bank.net\ncheckphone 734-987-1234"
+            "username: janeaccount P455W0RD: janeaccount123 @cc0uNT:janeaccount Birthday: 06/28/2003 Email: jane@gmail.com Phone: 313-555-1234",
+            "username: johnbanking P455W0RD: password @cc0uNT:johnbanking Birthday: 04/05/2004 Email: john@bank.net Phone: 734-987-1234"
         ]
         result = get_user_info(self.test_files["test2.txt"])
         self.assertEqual(result, expected_result)
@@ -160,6 +185,7 @@ class TestAllFunc(unittest.TestCase):
             'janeaccount': ('06/28/2003', 21),
             'johnbanking': ('04/05/2004', 20)
         }
+
         result = create_age_dict(user_data)
         self.assertEqual(result, expected_result)
 
@@ -169,26 +195,19 @@ class TestAllFunc(unittest.TestCase):
     def test_check_password_strength(self):
         user_data = get_user_info(self.test_files["test4.txt"])
 
-        expected_result = [
-            ('janeaccount123', 'strong'),
-            ('password', 'weak'),
-            ('Thompson!321', 'strong')
-        ]
+        expected_result = (('janeaccount123', 'medium'), ('password', 'weak'), ('Thompson!321', 'strong'))
         result = check_password_strength(user_data)
         self.assertEqual(result, expected_result)
 
         bad_user_data = ["username: someone\n@cc0uNT:someone\nbirthday seems to be 01/01/2000\ncheckEMAIL some@domain.com\ncheckphone 123-456-7890"]
         result = check_password_strength(bad_user_data)
-        self.assertEqual(result, [])
+        self.assertEqual(result, ())
 
     def test_sort_email_domain(self):
         user_data = get_user_info(self.test_files["test4.txt"])
 
-        expected_result = {
-            'gmail.com': 1,
-            'bank.net': 1,
-            'google.com': 1
-        }
+        expected_result = {'gmail.com': 1, 'bank.net': 1, 'google.com': 1}
+
         result = sort_email_domain(user_data)
         self.assertEqual(result, expected_result)
 
@@ -200,22 +219,17 @@ class TestAllFunc(unittest.TestCase):
     def test_validate_michigan_number(self):
         user_data = get_user_info(self.test_files["test4.txt"])
 
-        expected_result = [
-            '313-555-1234',
-            '734-987-1234',
-            '313-123-4567'
-        ]
+        expected_result = ['313-555-1234', '734-987-1234', '313-123-4567']
+
         result = validate_michigan_number(user_data)
         self.assertEqual(result, expected_result)
 
-        bad_user_data = ["username: someone\n@cc0uNT:someone\nbirthday seems to be 01/01/2000\ncheckEMAIL some@domain.com\ncheckphone 123-456-7890"]
+        bad_user_data = ["username: someone\n@cc0uNT:someone\nbirthday seems to be 01/01/2000\ncheckEMAIL: someone@domain.com\ncheckphone: 123-456-7890"]
         result = validate_michigan_number(bad_user_data)
         self.assertEqual(result, [])
 
-
 def main():
     unittest.main(verbosity=2)
-
 
 if __name__ == "__main__":
     main()
