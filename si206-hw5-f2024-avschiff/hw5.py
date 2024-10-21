@@ -103,8 +103,12 @@ def validate_michigan_number(user_data: list) -> list:
     Returns:
         michigan_numbers (list): A list of valid southeast Michigan phone numbers.
     """
-    # TODO: implement this function
-    pass
+    michigan_numbers = []
+    for user in user_data:
+        phone = re.search(r'checkphone\s(\d{3}-\d{3}-\d{4})', user).group(1)
+        if phone.startswith(('313', '734', '810')):
+            michigan_numbers.append(phone)
+    return michigan_numbers
 
 
 class TestAllFunc(unittest.TestCase):
