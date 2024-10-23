@@ -63,8 +63,14 @@ def get_address_list(email_info: list) -> list:
     Returns:
         address_list (list): a list of tuples, each tuple contains state, city, zip code, street name and street number
     """
-    # TODO: implement this function
-    pass
+    pattern = r"(\d+)\s(.*),\s(.*),\s(.*)\s(\d{5})"
+    address_list = []
+    for info in email_info:
+        match = re.findall(pattern, info)
+        for i in match:
+            street_number, street, city, state, zip = i
+            address_list.append((state, city, zip, street, street_number))
+    return address_list
 
 
 def main():
