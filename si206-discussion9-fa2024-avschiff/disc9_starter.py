@@ -37,15 +37,22 @@ def get_founded_year(soup):
 
 def main():
     # Task 1: Create a BeautifulSoup object.
-    
-    # YOUR CODE HERE
-
+    url = "https://en.wikipedia.org/wiki/University_of_Michigan"
+    response = requests.get(url)
+    if response.status_code == 200:
+        html = response.text
+        soup = BeautifulSoup(html, 'html.parser')
+    else:
+        print("Failed to retrieve the web page.")
+        return
     # Task 4: Sort the dictionary by founding year to see what the 3 newest programs are at the University of Michigan
-    
-    # YOUR CODE HERE
-    pass
-
-
+    founding_year = get_founded_year(soup)
+    print(founding_year)
+    sorted_founding_year = sorted(founding_year.items(), key=lambda item: item[1], reverse=True)
+    newest_programs = sorted_founding_year[:3]
+    print("Three newest programs at the University of Michigan:")
+    for program, year in newest_programs:
+        print(f"{program}: {year}")
 
 # DO NOT change anything below this
 class TestAllMethods(unittest.TestCase):
