@@ -18,8 +18,20 @@ def get_founded_year(soup):
 
     Be sure to convert the founding year to an integer.
     """
-    # YOUR CODE HERE
-    pass
+    table = soup.find('table', class_='wikitable sortable')
+    dataDict = {}
+    if table:
+        rows = table.find_all('tr')
+        for row in rows[1:-1]:
+            columns = row.find_all('td')
+            school = columns[0].text.strip()
+            founding_year = columns[1].text.strip()
+            try:
+                founding_year = int(founding_year)
+                dataDict[school] = founding_year
+            except ValueError:
+                print(f"Invalid founding year for {school}: {founding_year}")
+    return dataDict
 
 
 
