@@ -17,27 +17,29 @@ def get_landmark_data(soup) -> dict[dict]:
 
     returns a nested dictionary
     '''
-    landmarks_data = {}
-    table = soup.find('table', {'class': 'wikitable'})
-    rows = table.find_all('tr')[1:]
+    landmarks = {}
+    table = soup.find('table', {'class': 'wikitable sortable'})
+    rows = table.find_all('tr')
 
-    for row in rows:
+    for row in rows[1:]: 
         cols = row.find_all('td')
         if len(cols) >= 5:
             name = cols[0].text.strip()
             date_designated = cols[1].text.strip()
             location = cols[2].text.strip()
-            county = cols[3].text.strip()
-            description = cols[4].text.strip()
 
-            landmarks_data[name] = {
+            raw_county = cols[3].text.strip()
+            description = re.sub(r'\s+', ' ', cols[4].text.strip())
+            county_match = re.search(r'[A-Za-z]+$', description)
+            county = county_match.group() if county_match else "Unknown"
+
+            landmarks[name] = {
                 'date_designated': date_designated,
                 'location': location,
                 'county': county,
                 'description': description
             }
-
-    return landmarks_data
+    return landmarks
 
 # TASK 3: GET PROPER NOUNS
 def get_proper_noun_phrases(landmarks_dict:dict[dict], target_landmark:str) -> list[str]:
@@ -49,7 +51,7 @@ def get_proper_noun_phrases(landmarks_dict:dict[dict], target_landmark:str) -> l
     returns a list with all proper nounts
     '''
     description = landmarks_dict.get(target_landmark, {}).get('description', "")
-    proper_nouns = re.findall(r'\b(?:[A-Z][a-z]*\s)+[A-Z][a-z]*\b', description)
+    proper_nouns = re.findall(r'\b([A-Z][a-z]*(?:\s+[A-Z][a-z]*)+)\b', description)
     return [phrase.strip() for phrase in proper_nouns]
 
 def main():
@@ -59,10 +61,6 @@ def main():
     soup = BeautifulSoup(response.text, 'html.parser')
     
     landmark_data = get_landmark_data(soup)
-    
-    example_phrases = get_proper_noun_phrases(landmark_data, 'Bay View')
-    print("Proper noun phrases for 'Bay View':", example_phrases)
-
 
 # DO NOT MODIFY TEST CASES
 class TestAllFunctions(unittest.TestCase):
