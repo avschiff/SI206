@@ -17,7 +17,27 @@ def get_landmark_data(soup) -> dict[dict]:
 
     returns a nested dictionary
     '''
-    pass
+    landmarks_data = {}
+    table = soup.find('table', {'class': 'wikitable'})
+    rows = table.find_all('tr')[1:]
+
+    for row in rows:
+        cols = row.find_all('td')
+        if len(cols) >= 5:
+            name = cols[0].text.strip()
+            date_designated = cols[1].text.strip()
+            location = cols[2].text.strip()
+            county = cols[3].text.strip()
+            description = cols[4].text.strip()
+
+            landmarks_data[name] = {
+                'date_designated': date_designated,
+                'location': location,
+                'county': county,
+                'description': description
+            }
+
+    return landmarks_data
 
 # TASK 3: GET PROPER NOUNS
 def get_proper_noun_phrases(landmarks_dict:dict[dict], target_landmark:str) -> list[str]:
