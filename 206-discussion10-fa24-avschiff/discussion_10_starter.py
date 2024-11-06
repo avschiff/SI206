@@ -48,8 +48,9 @@ def get_proper_noun_phrases(landmarks_dict:dict[dict], target_landmark:str) -> l
 
     returns a list with all proper nounts
     '''
-    pass
-
+    description = landmarks_dict.get(target_landmark, {}).get('description', "")
+    proper_nouns = re.findall(r'\b(?:[A-Z][a-z]*\s)+[A-Z][a-z]*\b', description)
+    return [phrase.strip() for phrase in proper_nouns]
 
 def main():
     #TASK 1: GET DATA FROM WIKIPEDIA
