@@ -74,8 +74,14 @@ def output_csv(data, filename):
     INPUT: A list of tuples and a string containing the filename
     RETURN: None
     """
-    pass
-
+    header = ['Title', 'Listing ID', 'Policy Number', 'Host Name', 'Place Type', 'Cost', 'Review Count']
+    
+    with open(filename, 'w', newline='', encoding="utf-8-sig") as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        for row in data:
+            writer.writerow(row)
+            
 def validate_policy_numbers(data):
     """
     INPUT: A list of tuples
