@@ -60,8 +60,14 @@ def create_listing_database(html_file):
     INPUT: A string containing the path of the html file
     RETURN: A list of tuples
     """
-    pass
-
+    listings = load_listing_results(html_file)
+    detailed_data = []
+    
+    for title, listing_id in listings:
+        details = get_listing_details(listing_id)
+        detailed_data.append(details)
+    
+    return detailed_data
 
 def output_csv(data, filename): 
     """
