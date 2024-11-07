@@ -81,13 +81,21 @@ def output_csv(data, filename):
         writer.writerow(header)
         for row in data:
             writer.writerow(row)
-            
+
 def validate_policy_numbers(data):
     """
     INPUT: A list of tuples
     RETURN: A list of tuples
     """
-    pass 
+    invalid_listings = []
+    policy_pattern = re.compile(r'^STR-\d{7}$') #help from AI
+    
+    for listing in data:
+        policy_number = listing[2]
+        if not policy_pattern.match(policy_number):
+            invalid_listings.append(listing)
+    
+    return invalid_listings  
 
 # EXTRA CREDIT 
 def google_scholar_searcher(query): 
