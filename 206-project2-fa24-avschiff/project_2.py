@@ -37,22 +37,48 @@ def get_listing_details(listing_id):
     INPUT: A string containing the listing id
     RETURN: A tuple
     """
-    details = None
-    listing_file = f"html_files/{listing_id}.html"
+    listing_file = f"/Users/averyschiff/Documents/SI206/206-project2-fa24-avschiff/html_files/listing_{listing_id}.html"
     
     with open(listing_file, 'r', encoding="utf-8-sig") as file:
         soup = BeautifulSoup(file, 'html.parser')
-        
-        title = soup.find('h1', class_='listing-title').text.strip()
-        policy_number = soup.find('span', class_='policy-number').text.strip()
-        host_name = soup.find('span', class_='host-name').text.strip()
-        place_type = soup.find('span', class_='place-type').text.strip()
-        cost = int(soup.find('span', class_='price').text.strip().replace('$', '').replace(',', ''))
-        review_count = int(soup.find('span', class_='review-count').text.strip())
-        
-        details = (title, listing_id, policy_number, host_name, place_type, cost, review_count)
-    
-    return details
+
+        # policy number
+        policy_text = soup.find('li', class_='policy-number').text.strip()
+        if "Pending" in policy_text:
+            policy_number = "Pending"
+        elif "Exempt" in policy_text:
+            policy_number = "Exempt"
+        else:
+            policy_number = policy_text
+
+        # host level
+        if "Superhost" in soup.find('div', class_='host-info').text:
+            host_level = "Superhost"
+        else:
+            host_level = "regular"
+
+        # host name
+        host_name_tag = soup.find('h2', class_='host-name')
+        host_name = host_name_tag.text.strip() if host_name_tag else "missing"
+
+        # place type
+        subtitle = soup.find('h2', class_='listing-subtitle').text.lower()
+        if "private" in subtitle:
+            place_type = "Private Room"
+        elif "shared" in subtitle:
+            place_type = "Shared Room"
+        else:
+            place_type = "Entire Room"
+
+        # number of reviews
+        review_tag = soup.find('span', class_='review-count')
+        num_reviews = int(review_tag.text.strip().split()[0]) if review_tag else 0
+
+        # nightly rate
+        price_tag = soup.find('span', class_='price')
+        nightly_rate = int(price_tag.text.strip().replace('$', '').replace(',', ''))
+
+        return (policy_number, host_level, host_name, place_type, num_reviews, nightly_rate)
 
 
 def create_listing_database(html_file): 
@@ -74,13 +100,16 @@ def output_csv(data, filename):
     INPUT: A list of tuples and a string containing the filename
     RETURN: None
     """
-    header = ['Title', 'Listing ID', 'Policy Number', 'Host Name', 'Place Type', 'Cost', 'Review Count']
+    sorted_data = sorted(data, key=lambda x: x[6], reverse=True)
+    header = [
+        'Listing Title', 'Listing ID', 'Policy Number', 'Host Level', 
+        'Host Name(s)', 'Place Type', 'Review Number', 'Nightly Rate'
+    ]
     
     with open(filename, 'w', newline='', encoding="utf-8-sig") as f:
         writer = csv.writer(f)
         writer.writerow(header)
-        for row in data:
-            writer.writerow(row)
+        writer.writerows(sorted_data)
 
 def validate_policy_numbers(data):
     """
@@ -202,13 +231,13 @@ class TestCases(unittest.TestCase):
         self.assertEqual(len(csv_lines), 19)
 
         # check that the header row is correct
-        self.assertEqual(csv_lines[0], ['Title', 'Listing ID', 'Policy Number', 'Host Name', 'Place Type', 'Cost', 'Review Count'])
+        self.assertEqual(csv_lines[0], ['Listing Title', 'Listing ID', 'Policy Number', 'Host Level', 'Host Name(s)', 'Place Type', 'Review Number', 'Nightly Rate'])
 
         # check that the next row is the correct information about Guest suite in San Francisco
-        self.assertEqual(csv_lines[1], ['Loft in Mission District', '1944564', 'STR-0005349', 'Superhost', 'Brian', '422', '181'])
+        self.assertEqual(csv_lines[1], ['Loft in Mission District', '1944564', 'STR-0005349', 'Superhost', 'Brian', 'Entire Room', '422', '181'])
       
         # check that the row after the above row is the correct infomration about Private room in Mission District
-        self.assertEqual(csv_lines[2], ['Guest suite in Mission District', '467507', 'STR-0005349', 'Superhost', 'Jennifer', '324', '165'])
+        self.assertEqual(csv_lines[2], ['Guest suite in Mission District', '467507', 'STR-0005349', 'Superhost', 'Jennifer', 'Entire Room', '324', '165'])
 
 
     def test_validate_policy_numbers(self):
