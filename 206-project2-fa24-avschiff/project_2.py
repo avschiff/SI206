@@ -37,7 +37,23 @@ def get_listing_details(listing_id):
     INPUT: A string containing the listing id
     RETURN: A tuple
     """
-    pass
+    details = None
+    listing_file = f"html_files/{listing_id}.html"
+    
+    with open(listing_file, 'r', encoding="utf-8-sig") as file:
+        soup = BeautifulSoup(file, 'html.parser')
+        
+        title = soup.find('h1', class_='listing-title').text.strip()
+        policy_number = soup.find('span', class_='policy-number').text.strip()
+        host_name = soup.find('span', class_='host-name').text.strip()
+        place_type = soup.find('span', class_='place-type').text.strip()
+        cost = int(soup.find('span', class_='price').text.strip().replace('$', '').replace(',', ''))
+        review_count = int(soup.find('span', class_='review-count').text.strip())
+        
+        details = (title, listing_id, policy_number, host_name, place_type, cost, review_count)
+    
+    return details
+
 
 def create_listing_database(html_file): 
     """
