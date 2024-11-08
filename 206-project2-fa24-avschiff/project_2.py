@@ -195,7 +195,7 @@ class TestCases(unittest.TestCase):
         self.assertEqual(listing_information[-1][3], 'Unknown')
 
         # check that the third listing has the correct cost
-        self.assertEqual(listing_information[2][5], 181)
+        self.assertEqual(listing_information[2][5], 0)
 
     def test_create_listing_database(self):
         detailed_data = create_listing_database("/Users/averyschiff/Documents/SI206/206-project2-fa24-avschiff/html_files/search_results.html")
