@@ -1,3 +1,4 @@
+import requests
 from bs4 import BeautifulSoup
 import re
 import os
@@ -142,8 +143,22 @@ def google_scholar_searcher(query):
     Return: a list of titles on the first page (list)
     * see PDF instructions for more details
     """
-    pass
+    base_url = "https://scholar.google.com/scholar"
+    params = {'q': query}
 
+    response = requests.get(base_url, params=params)
+
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        titles = []
+        for item in soup.find_all('h3', class_='gs_rt'):
+            title = item.get_text()
+            titles.append(title)
+
+        return titles
+    else:
+        print("Failed to retrieve results")
+        return []
 
 # TODO: Don't forget to write your test cases! 
 class TestCases(unittest.TestCase):
@@ -272,5 +287,11 @@ def main ():
     output_csv(detailed_data, "airbnb_dataset.csv")
 
 if __name__ == '__main__':
-    # main()
+    #main()
     unittest.main(verbosity=2)
+    
+    #testing google_scholar_searcher function
+    query = "airbnb"
+    titles = google_scholar_searcher(query)
+    for title in titles:
+        print(title)
