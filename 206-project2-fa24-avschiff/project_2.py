@@ -15,7 +15,6 @@ An example of that within the function would be:
 There are a few special characters present from Airbnb that aren't defined in standard UTF-8 (which is what Python runs by default). This is beyond the scope of what you have learned so far in this class, so we have provided this for you just in case it happens to you. Good luck!
 """
 
-
 def load_listing_results(html_file): 
     """
     INPUT: A string containing the path of the html file
@@ -53,33 +52,38 @@ def get_listing_details(listing_id):
         policy_number = policy_tag.find('span').text.strip() if policy_tag else "N/A"
 
         # host level 
-        host_level_tag = soup.find('div', class_='t1mwk1n0')
-        host_level = "Superhost" if host_level_tag and "Superhost" in host_level_tag.text else "regular" 
+        host_level_tag = soup.find('button', class_='_1j5azqwp l1j9v1wn dir dir-ltr')
+        host_level = "Superhost" if host_level_tag and "superhost" in host_level_tag.get('aria-label', '').lower() else "regular"
 
-        # host name (EDIT)
-        host_name_tag = soup.find('div', class_='t1mwk1n0 dir dir-ltr')
-        host_name = host_name_tag.text.strip() if host_name_tag else "missing"
+        # host name and place type
+        host_name_tag = soup.find('div', class_='_cv5qq4')
+        if host_name_tag:
+            host_and_place = host_name_tag.text.strip().replace("hosted by", "").strip()
+            host_name = host_and_place.split()[-1].strip()
 
-        # place type (EDIT)
-        subtitle_tag = soup.find('h2', class_='cq2dsrr dir dir-ltr')
-        if subtitle_tag:
-            subtitle_text = subtitle_tag.text.lower()
-            if "entire" in subtitle_text:
+            # place type based on host description
+            if "entire" in host_and_place.lower():
                 place_type = "Entire Room"
-            elif "private" in subtitle_text:
+            elif "private" in host_and_place.lower():
                 place_type = "Private Room"
-            elif "shared" in subtitle_text:
+            elif "shared" in host_and_place.lower():
                 place_type = "Shared Room"
             else:
                 place_type = "Unknown"
         else:
             place_type = "Unknown"
+            host_name = "missing"
 
-        # number of reviews (EDIT)
-        review_tag = soup.find('span', class_='r1dxllyb')
-        num_reviews = int(review_tag.text.split()[-1].strip("()")) if review_tag else 0
+        # number of reviews
+        review_tag = soup.find_all('span', class_='a8jt5op dir dir-ltr')
+        num_reviews = 0
+        for tag in review_tag:
+            match = re.search(r'from (\d+) reviews', tag.text)
+            if match:
+                num_reviews = int(match.group(1))
+                break  # stop when find first match
 
-        # nightly rate (EDIT)
+        # nightly rate
         price_tag = soup.find('span', class_='_tyxjp1')
         nightly_rate = int(price_tag.text.strip('$').replace(',', '')) if price_tag else 0
 
@@ -91,30 +95,29 @@ def create_listing_database(html_file):
     INPUT: A string containing the path of the html file
     RETURN: A list of tuples
     """
-    listings = load_listing_results(html_file)
-    detailed_data = []
+    listing_results = load_listing_results(html_file)
+    full_listing_data = []
     
-    for title, listing_id in listings:
-        details = get_listing_details(listing_id)
-        detailed_data.append(details)
+    for title, listing_id in listing_results:
+        listing_details = get_listing_details(listing_id)
+        full_listing_data.append((title, listing_id) + listing_details)
     
-    return detailed_data
+    return full_listing_data
 
 def output_csv(data, filename): 
     """
     INPUT: A list of tuples and a string containing the filename
     RETURN: None
     """
-    sorted_data = sorted(data, key=lambda x: x[5], reverse=True)
-    header = [
-        'Listing Title', 'Listing ID', 'Policy Number', 'Host Level', 
-        'Host Name(s)', 'Place Type', 'Review Number', 'Nightly Rate'
-    ]
-    
-    with open(filename, 'w', newline='', encoding="utf-8-sig") as f:
-        writer = csv.writer(f)
-        writer.writerow(header)
-        writer.writerows(sorted_data)
+    sorted_data = sorted(data, key=lambda x: x[6], reverse=True)
+    with open(filename, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        
+        writer.writerow(["Listing Title", "Listing ID", "Policy Number", "Host Level", 
+                         "Host Name(s)", "Place Type", "Review Number", "Nightly Rate"])
+        
+        for row in sorted_data:
+            writer.writerow(row)
 
 def validate_policy_numbers(data):
     """
@@ -122,14 +125,15 @@ def validate_policy_numbers(data):
     RETURN: A list of tuples
     """
     invalid_listings = []
-    policy_pattern = re.compile(r'^STR-\d{7}$') #help from AI
+    policy_pattern = re.compile(r'^STR-\d{7}$')
     
     for listing in data:
+        title = listing[0]
         policy_number = listing[2]
         if not policy_pattern.match(policy_number):
-            invalid_listings.append(listing)
+            invalid_listings.append((title, policy_number, "Invalid policy number"))
     
-    return invalid_listings  
+    return invalid_listings
 
 # EXTRA CREDIT 
 def google_scholar_searcher(query): 
@@ -193,7 +197,7 @@ class TestCases(unittest.TestCase):
         self.assertEqual(listing_information[0][0], "STR-0005349")
 
         # check that the last listing in the html_list has the correct place type
-        self.assertEqual(listing_information[-1][3], 'Unknown')
+        self.assertEqual(listing_information[-1][3], 'Entire Room')
 
         # check that the third listing has the correct cost
         self.assertEqual(listing_information[2][5], 181)
@@ -208,14 +212,15 @@ class TestCases(unittest.TestCase):
             # assert each item in the list of listings is a tuple
             self.assertEqual(type(item), tuple)
             # check that each tuple has a length of 8
+            self.assertTrue(len(item), 8)
 
         # check that the first tuple is made up of the following:
         # ('Loft in Mission District', '1944564', '2022-004088STR', 'Superhost', 'Brian', 'Entire Room', 422, 181)
-        self.assertEqual(detailed_data[0], ('Loft in Mission District', '1944564', 'STR-0005349', 'Superhost', 'Brian', 'Entire Room', 422))
+        self.assertEqual(detailed_data[0], ('Loft in Mission District', '1944564', '2022-004088STR', 'Superhost', 'Brian', 'Entire Room', 422, 181))
        
         # check that the last tuple is made up of the following:
         # ('Guest suite in Mission District', '467507', 'STR-0005349', 'Superhost', 'Jennifer', 'Entire Room', 324, 165)
-        self.assertEqual(detailed_data[-1], ('Guest suite in Mission District', '467507', 'STR-0005349', 'Superhost', 'Jennifer', 'Entire Room', 324))
+        self.assertEqual(detailed_data[-1], ('Guest suite in Mission District', '467507', 'STR-0005349', 'Superhost', 'Jennifer', 'Entire Room', 324, 165))
 
     def test_output_csv(self):
         # call create_listing_database on "html_files/search_results.html"
@@ -227,7 +232,7 @@ class TestCases(unittest.TestCase):
 
         # read in the csv that you wrote
         csv_lines = []
-        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'test.csv'), 'r') as f:
+        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)), '/Users/averyschiff/Documents/SI206/test.csv'), 'r') as f:
             csv_reader = csv.reader(f)
             for i in csv_reader:
                 csv_lines.append(i)
@@ -239,10 +244,10 @@ class TestCases(unittest.TestCase):
         self.assertEqual(csv_lines[0], ['Listing Title', 'Listing ID', 'Policy Number', 'Host Level', 'Host Name(s)', 'Place Type', 'Review Number', 'Nightly Rate'])
 
         # check that the next row is the correct information about Guest suite in San Francisco
-        self.assertEqual(csv_lines[1], ['Loft in Mission District', '1944564', 'STR-0005349', 'Superhost', 'Brian', 'Entire Room', '422', '181'])
+        self.assertEqual(csv_lines[1], ['Guest suite in San Francisco','6092596','STR-0000337','Superhost','Marc','Entire Room','713','164'])
       
         # check that the row after the above row is the correct infomration about Private room in Mission District
-        self.assertEqual(csv_lines[2], ['Guest suite in Mission District', '467507', 'STR-0005349', 'Superhost', 'Jennifer', 'Entire Room', '324', '165'])
+        self.assertEqual(csv_lines[2], ['Private room in Mission District','16204265','1081184﻿','Superhost','Koncha','Private Room','520','127'])
 
 
     def test_validate_policy_numbers(self):
@@ -260,7 +265,7 @@ class TestCases(unittest.TestCase):
         self.assertTrue(all(isinstance(listing, tuple) for listing in invalid_listings)) #help from AI
 
         # and that there are exactly three element in each tuple
-        self.assertTrue(all(len(listing) == 7 for listing in invalid_listings)) #help from AI
+        self.assertTrue(all(len(listing) == 3 for listing in invalid_listings))
 
 def main (): 
     detailed_data = create_listing_database("/Users/averyschiff/Documents/SI206/206-project2-fa24-avschiff/html_files/search_results.html")
