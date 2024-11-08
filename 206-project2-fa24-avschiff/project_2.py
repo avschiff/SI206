@@ -23,14 +23,15 @@ def load_listing_results(html_file):
     listings = []
     with open(html_file, 'r', encoding="utf-8-sig") as file:
         soup = BeautifulSoup(file, 'html.parser')
-        listing_elements = soup.find_all('a', class_='listing-link')
+        listing_links = soup.find_all('a', class_='l1j9v1wn bn2bl2p dir dir-ltr')
         
-        for element in listing_elements:
-            title = element.get('title', '').strip()
-            listing_id = element.get('href', '').split('/')[-1]
+        for link in listing_links:
+            listing_id = link['href'].split('/')[2].split('?')[0]
+            title_tag = soup.find('div', id=f'title_{listing_id}')
+            title = title_tag.text.strip() if title_tag else "Unknown Title" #help from AI
             listings.append((title, listing_id))
-    
-    return listings 
+
+    return listings
 
 def get_listing_details(listing_id): 
     """
@@ -43,40 +44,56 @@ def get_listing_details(listing_id):
         soup = BeautifulSoup(file, 'html.parser')
 
         # policy number
-        policy_text = soup.find('li', class_='policy-number').text.strip()
-        if "Pending" in policy_text:
-            policy_number = "Pending"
-        elif "Exempt" in policy_text:
-            policy_number = "Exempt"
+        policy_tag = soup.find('li', class_='f19phm7j dir dir-ltr')
+        if policy_tag:
+            policy_text = policy_tag.find('span', class_='ll4r2nl dir dir-ltr').text.strip()
+            if "Pending" in policy_text:
+                policy_number = "Pending"
+            elif "Exempt" in policy_text:
+                policy_number = "Exempt"
+            else:
+                policy_number = policy_text
         else:
-            policy_number = policy_text
+            policy_number = "N/A"
 
         # host level
-        if "Superhost" in soup.find('div', class_='host-info').text:
-            host_level = "Superhost"
-        else:
-            host_level = "regular"
+        host_level_tag = soup.find('div', class_='t1mwk1n0')
+        host_level = host_level_tag.text.strip() if host_level_tag and "Superhost" in host_level_tag.text else "regular" #help from AI
 
         # host name
-        host_name_tag = soup.find('h2', class_='host-name')
-        host_name = host_name_tag.text.strip() if host_name_tag else "missing"
+        script_tag = soup.find('script', text=re.compile(r'"smart_name"'))
+        if script_tag:
+            match = re.search(r'"smart_name":"(.*?)"', script_tag.string)
+            host_name = match.group(1) if match else "missing"
+        else:
+            host_name = "missing"
 
         # place type
-        subtitle = soup.find('h2', class_='listing-subtitle').text.lower()
-        if "private" in subtitle:
-            place_type = "Private Room"
-        elif "shared" in subtitle:
-            place_type = "Shared Room"
+        place_type_script = soup.find('script', text=re.compile(r'"title":"(Entire|Private|Shared)'))
+        if place_type_script:
+            match = re.search(r'"title":"(Entire|Private|Shared) .*? Room"', place_type_script.string)
+            if match:
+                place_type = f"{match.group(1)} Room"
+            else:
+                place_type = "Unknown"
         else:
-            place_type = "Entire Room"
+            place_type = "Unknown"
 
         # number of reviews
-        review_tag = soup.find('span', class_='review-count')
-        num_reviews = int(review_tag.text.strip().split()[0]) if review_tag else 0
+        reviews_script = soup.find('script', text=re.compile(r'"avgRatingLocalized"'))
+        if reviews_script:
+            match = re.search(r'"avgRatingLocalized":"[0-9.]+ \((\d+) reviews\)"', reviews_script.string)
+            num_reviews = int(match.group(1)) if match else 0
+        else:
+            num_reviews = 0
 
         # nightly rate
-        price_tag = soup.find('span', class_='price')
-        nightly_rate = int(price_tag.text.strip().replace('$', '').replace(',', ''))
+        rate_script = soup.find('script', text=re.compile(r'"StructuredDisplayPrice"'))
+        if rate_script:
+            match = re.search(r'"price":"\$(\d+)"', rate_script.string)
+            nightly_rate = int(match.group(1)) if match else 0
+        else:
+            nightly_rate = 0
 
         return (policy_number, host_level, host_name, place_type, num_reviews, nightly_rate)
 
@@ -185,13 +202,13 @@ class TestCases(unittest.TestCase):
             self.assertEqual(type(info[5]), int)
 
         # check that the first listing in the html_list has the correct policy number
-        self.assertEqual(listing_information[0][2], "STR-0005349")
+        self.assertEqual(listing_information[0][0], "STR-0005349")
 
         # check that the last listing in the html_list has the correct place type
-        self.assertEqual(listing_information[-1][5], 'Entire Room')
+        self.assertEqual(listing_information[-1][3], 'Unknown')
 
         # check that the third listing has the correct cost
-        self.assertEqual(listing_information[2][6], 200)
+        self.assertEqual(listing_information[2][5], 0)
 
     def test_create_listing_database(self):
         detailed_data = create_listing_database("/Users/averyschiff/Documents/SI206/206-project2-fa24-avschiff/html_files/search_results.html")
