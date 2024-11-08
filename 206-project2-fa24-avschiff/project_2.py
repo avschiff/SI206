@@ -15,6 +15,7 @@ An example of that within the function would be:
 There are a few special characters present from Airbnb that aren't defined in standard UTF-8 (which is what Python runs by default). This is beyond the scope of what you have learned so far in this class, so we have provided this for you just in case it happens to you. Good luck!
 """
 
+
 def load_listing_results(html_file): 
     """
     INPUT: A string containing the path of the html file
