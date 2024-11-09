@@ -5,6 +5,16 @@ import os
 import csv
 import unittest
 
+# Acknowledgement of help from AI and extra notes
+'''
+I got help from ChatGPT for certain aspects of my code, including debugging my functions
+and finding the correct data to parse from the HTML files. I specifically got a lot of help
+from AI when I wanted to condense the amount of lines I used by doing an if statement all in
+one line. I have specifically noted where I used ChatGPT within the code as a comment. Also, 
+my code did not run correctly when I did not use the entire path to reach a file so I needed
+to specify the entire path for my computer.
+'''
+
 # IMPORTANT NOTE:
 """
 If you are getting "encoding errors" while trying to open, read, or write from a file, add the following argument to any of your open() functions:
@@ -50,17 +60,18 @@ def get_listing_details(listing_id):
 
         # policy number
         policy_tag = soup.find('li', class_='f19phm7j dir dir-ltr')
-        policy_number = policy_tag.find('span').text.strip() if policy_tag else "N/A"
+        policy_number = policy_tag.find('span').text.strip() if policy_tag else "N/A" #help from AI
 
         # host level 
         host_level_tag = soup.find('button', class_='_1j5azqwp l1j9v1wn dir dir-ltr')
-        host_level = "Superhost" if host_level_tag and "superhost" in host_level_tag.get('aria-label', '').lower() else "regular"
+        host_level = "Superhost" if host_level_tag and "superhost" in host_level_tag.get('aria-label', '').lower() else "regular" #help from AI
 
         # host name and place type
         host_name_tag = soup.find('div', class_='_cv5qq4')
         if host_name_tag:
-            host_and_place = host_name_tag.text.strip().replace("hosted by", "").strip()
-            host_name = host_and_place.split()[-1].strip()
+            hosted_by_partition=host_name_tag.text.partition('hosted by')
+            host_and_place=hosted_by_partition[0]
+            host_name=hosted_by_partition[-1].replace("&nbsp;", " ").strip()
 
             # place type based on host description
             if "entire" in host_and_place.lower():
@@ -86,7 +97,7 @@ def get_listing_details(listing_id):
 
         # nightly rate
         price_tag = soup.find('span', class_='_tyxjp1')
-        nightly_rate = int(price_tag.text.strip('$').replace(',', '')) if price_tag else 0
+        nightly_rate = int(price_tag.text.strip('$').replace(',', '')) if price_tag else 0 #help from AI
 
         return (policy_number, host_level, host_name, place_type, num_reviews, nightly_rate)
 
@@ -144,15 +155,15 @@ def google_scholar_searcher(query):
     * see PDF instructions for more details
     """
     base_url = "https://scholar.google.com/scholar"
-    params = {'q': query}
+    params = {'q': query} #help from AI
 
-    response = requests.get(base_url, params=params)
+    response = requests.get(base_url, params=params) #help from AI
 
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
         titles = []
         for item in soup.find_all('h3', class_='gs_rt'):
-            title = item.get_text()
+            title = item.get_text() #help from AI
             titles.append(title)
 
         return titles
@@ -163,7 +174,7 @@ def google_scholar_searcher(query):
 # TODO: Don't forget to write your test cases! 
 class TestCases(unittest.TestCase):
     def setUp(self):
-        self.listings = load_listing_results("/Users/averyschiff/Documents/SI206/206-project2-fa24-avschiff/html_files/search_results.html") #pasted entire path to reach this html file
+        self.listings = load_listing_results("/Users/averyschiff/Documents/SI206/206-project2-fa24-avschiff/html_files/search_results.html") #pasted entire path to reach this html file, did not work without it
 
     def test_load_listing_results(self):
 
@@ -280,14 +291,14 @@ class TestCases(unittest.TestCase):
         self.assertTrue(all(isinstance(listing, tuple) for listing in invalid_listings)) #help from AI
 
         # and that there are exactly three element in each tuple
-        self.assertTrue(all(len(listing) == 3 for listing in invalid_listings))
+        self.assertTrue(all(len(listing) == 3 for listing in invalid_listings)) #help from AI
 
 def main (): 
     detailed_data = create_listing_database("/Users/averyschiff/Documents/SI206/206-project2-fa24-avschiff/html_files/search_results.html")
     output_csv(detailed_data, "airbnb_dataset.csv")
 
 if __name__ == '__main__':
-    #main()
+    main()
     unittest.main(verbosity=2)
     
     #testing google_scholar_searcher function
