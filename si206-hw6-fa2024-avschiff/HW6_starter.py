@@ -52,9 +52,11 @@ def search_movie(movie):
         tuple with the response text and url OR None if the 
         request was unsuccesful
     '''
-
-    pass
-    
+    url = f"http://www.omdbapi.com/?t={movie}&apikey={API_KEY}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json(), url
+    return None
 
 def update_cache(movies, cache_file):
     '''
