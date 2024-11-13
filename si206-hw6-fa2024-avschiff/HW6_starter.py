@@ -67,8 +67,20 @@ def update_cache(movies, cache_file):
     RETURNS: 
         A string saying the percentage of movies we succesfully got data for 
     '''
-    pass
+    cache = get_json_content(cache_file)
+    new_data_count = 0
 
+    for movie in movies:
+        url = f"http://www.omdbapi.com/?t={movie}&apikey={API_KEY}"
+        if url not in cache:
+            response = requests.get(url)
+            if response.status_code == 200:
+                cache[url] = response.json()
+                new_data_count += 1
+
+    save_cache(cache, cache_file)
+    percentage = (new_data_count / len(movies)) * 100
+    return f"Cached data for {percentage:.1f}% of movies"
 
 def get_highest_box_office_movie_by_country(country_name, cache_file): 
     '''
