@@ -26,7 +26,7 @@ def get_json_content(filename):
         json dictionary OR an empty dict if the file could not be opened 
     '''
     try:
-        with open(filename, 'r', encoding = 'utf-8') as file:
+        with open(filename, 'r') as file:
             return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
@@ -166,14 +166,14 @@ def get_movie_rating(title, cache_file):
     return "No rating found"
 
 #assigned the api key here so the function will have already been defined
-API_KEY = get_api_key('/Users/averyschiff/Documents/SI206/si206-hw6-fa2024-avschiff/api_key.txt')
+API_KEY = get_api_key('api_key.txt')
 
 class TestHomework6(unittest.TestCase):
     def setUp(self):
         dir_path = os.path.dirname(os.path.realpath(__file__))
         self.filename = dir_path + '/' + "cache.json"
 
-        with open('/Users/averyschiff/Documents/SI206/si206-hw6-fa2024-avschiff/movies.txt', 'r') as f: 
+        with open('movies.txt', 'r') as f: 
             movies = f.readlines()
             
         for i in range(len(movies)): 
@@ -280,13 +280,13 @@ class TestHomework6(unittest.TestCase):
          self.assertEqual(API_KEY, hidden_key)
 
     def test_get_movie_rating(self):
-        test_titanic = get_movie_rating('Titanic', 'cache.json')
+        test_titanic = get_movie_rating('Titanic', self.filename)
         self.assertEqual(test_titanic, '88%')
         test_avatar = get_movie_rating('Avatar', self.filename)
         self.assertEqual(test_avatar, '81%')
         test_topgun = get_movie_rating('Top Gun', self.filename)
         self.assertEqual(test_topgun, '58%')
-        test_frozen = get_movie_rating('Frozen 2', self.cache)
+        test_frozen = get_movie_rating('Frozen 2', self.filename) #changed this frmo self.cache because get_movie_rating expects a filename
         self.assertEqual(test_frozen, 'No rating found')
 
     
@@ -299,10 +299,10 @@ def main():
     prior to running
     '''
     #######################################
-    # DO NOT CHANGE THIS -- had to change it so the entire path is visible, computer didn't recognize it otherwise
+    # DO NOT CHANGE THIS
     # this code loads in the list of movies and 
     # removes whitespace for you!
-    with open('/Users/averyschiff/Documents/SI206/si206-hw6-fa2024-avschiff/movies.txt', 'r') as f: 
+    with open('movies.txt', 'r') as f: 
         movies = f.readlines()
         
     for i in range(len(movies)): 
