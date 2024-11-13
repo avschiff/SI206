@@ -140,8 +140,9 @@ def get_api_key(file):
     RETURNS:
         your API key
     '''
-    pass
-
+    with open(file, 'r') as f:
+        return f.read().strip()
+    
 #EXTRA CREDIT
 def get_movie_rating(title, cache_file):
     '''
@@ -152,8 +153,13 @@ def get_movie_rating(title, cache_file):
     RETURNS:
         the rating OR 'No rating found'
     '''
-    pass
-
+    cache = get_json_content(cache_file)
+    for data in cache.values():
+        if data.get('Title') == title:
+            for rating in data.get('Ratings', []):
+                if rating['Source'] == 'Rotten Tomatoes':
+                    return rating['Value']
+    return "No rating found"
 
 class TestHomework6(unittest.TestCase):
     def setUp(self):
