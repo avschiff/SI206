@@ -92,8 +92,22 @@ def get_highest_box_office_movie_by_country(country_name, cache_file):
         EITHER a tuple with the title and box office amount of the highest grossing film in the specified country
         OR "No films found for [country_name]"
     '''
-    pass
+    cache = get_json_content(cache_file)
+    max_movie = None
+    max_box_office = 0
 
+    for data in cache.values():
+        if 'Country' in data and country_name in data['Country']:
+            box_office = data.get('BoxOffice', "$0").replace("$", "").replace(",", "")
+            try:
+                box_office = int(box_office)
+                if box_office > max_box_office:
+                    max_box_office = box_office
+                    max_movie = (data['Title'], max_box_office)
+            except ValueError:
+                continue
+
+    return max_movie if max_movie else f"No films found for {country_name}"
 
 def filter_movies_by_year(cutoff_year, cache_file):
     '''
