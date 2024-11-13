@@ -1,10 +1,14 @@
-# Your name: 
-# Your student id:
-# Your email:
-# Who or what you worked with on this homework (including generative AI like ChatGPT):
-# If you worked with generative AI also add a statement for how you used it.  
-# e.g.: 
-# Asked Chatgpt hints for debugging and suggesting the general structure of the code
+# Your name: Avery Schiff
+# Your student id: 35947681
+# Your email: avschiff@umich.edu
+# Who or what you worked with on this homework (including generative AI like ChatGPT): ChatGPT
+'''
+I got some help from ChatGPT on this assignment because I needed help debugging and
+correcting my mistakes as well as help on the general structure of my code. For example,
+I used ChatGPT to correctly format one-line if and for statements to condense my code
+a little. Overall, ChatGPT helped me ensure my functions were working and helped correct them
+when they were not. I have listed where I got help from AI in the code.
+'''
 
 
 import requests
@@ -28,7 +32,7 @@ def get_json_content(filename):
     try:
         with open(filename, 'r') as file:
             return json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError):
+    except (FileNotFoundError, json.JSONDecodeError): #help from AI
         return {}
     
 def save_cache(cdict, filename):
@@ -78,7 +82,7 @@ def update_cache(movies, cache_file):
         url = f"http://www.omdbapi.com/?t={movie}&apikey={API_KEY}"
         if url not in cache:
             response = requests.get(url)
-            if response.status_code == 200:
+            if response.status_code == 200: #help from AI
                 cache[url] = response.json()
                 new_data_count += 1
 
@@ -111,7 +115,7 @@ def get_highest_box_office_movie_by_country(country_name, cache_file):
             except ValueError:
                 continue
 
-    return max_movie if max_movie else f"No films found for {country_name}"
+    return max_movie if max_movie else f"No films found for {country_name}" #help from AI
 
 def filter_movies_by_year(cutoff_year, cache_file):
     '''
