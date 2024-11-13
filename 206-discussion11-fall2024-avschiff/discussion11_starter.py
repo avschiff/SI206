@@ -31,12 +31,19 @@ def longest_book(books):
         string: the title of the longest book
     """
     # Get list of ISBNs from txt file. HINT: You will need this to access the relevant dictionary keys 
-    with open('books.txt', 'r') as f: 
+    with open('/Users/averyschiff/Documents/SI206/206-discussion11-fall2024-avschiff/books.txt', 'r') as f:
         isbns = f.readlines()
     
-    # YOUR CODE HERE
-    longest = max(isbns, key=lambda isbn: books[isbn]['pages'])
-    return books[longest]['title']
+    max_len = 0
+    print(books)
+    #print("ISBNs", isbns)
+    for isbn in isbns:
+        isbn = isbn.strip()
+        num_page = books[isbn]["ISBN:"+isbn]['details']['number_of_pages']
+        if num_page > max_len:
+            max_len = num_page
+            longest_book = books[isbn]["ISBN:"+isbn]['details']['title']
+    return(longest_book)
 
 def author_by_letter(letter, books):
     """
@@ -70,7 +77,7 @@ def get_new_editions(books):
         list: a list of titles of books published since 2020
     """
     # YOUR CODE HERE
-    pass
+    return [book['title'] for book in books.values() if book['year'] > 2020] #help from AI to make one line
 
 
 #DO NOT CHANGE TEST CASES
