@@ -31,7 +31,7 @@ def get_json_content(filename):
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
     
-def save_cache(dict, filename):
+def save_cache(cdict, filename):
     '''
     ARGUMENTS: 
         filename: the name of the file to write a cache to
@@ -40,8 +40,8 @@ def save_cache(dict, filename):
     RETURNS: 
         None
     '''
-    pass
-
+    with open(filename, 'w') as file:
+        json.dump(cdict, file)
 
 def search_movie(movie):
     '''
