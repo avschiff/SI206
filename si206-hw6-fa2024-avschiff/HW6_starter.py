@@ -118,8 +118,18 @@ def filter_movies_by_year(cutoff_year, cache_file):
     RETURNS:
         a list of tuples with the movies and their years of release
     '''
-    pass
-        
+    cache = get_json_content(cache_file)
+    filtered_movies = []
+
+    for data in cache.values():
+        year = data.get('Year', "")
+        try:
+            if int(year) >= cutoff_year:
+                filtered_movies.append((data['Title'], int(year)))
+        except ValueError:
+            continue
+
+    return filtered_movies        
 
 #EXTRA CREDIT
 def get_api_key(file):
