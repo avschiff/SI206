@@ -15,7 +15,7 @@ import os
 #TO DO: 
 # assign this variable to your API key
 # if you are doing the extra credit, assign API_KEY to the return value of your get_api_key function
-API_KEY = ''
+# I ASSIGN THE API KEY LOWER DOWN
 
 def get_json_content(filename):
     '''
@@ -26,7 +26,7 @@ def get_json_content(filename):
         json dictionary OR an empty dict if the file could not be opened 
     '''
     try:
-        with open(filename, 'r') as file:
+        with open(filename, 'r', encoding = 'utf-8') as file:
             return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
@@ -52,10 +52,14 @@ def search_movie(movie):
         tuple with the response text and url OR None if the 
         request was unsuccesful
     '''
-    url = f"http://www.omdbapi.com/?t={movie}&apikey={API_KEY}"
+    formatted_movie = movie.replace(" ", "+")
+    url = f"http://www.omdbapi.com/?t={formatted_movie}&apikey={API_KEY}"
     response = requests.get(url)
     if response.status_code == 200:
-        return response.json(), url
+        data = response.json()
+        if data.get("Response") == "False":
+            return None
+        return data, url
     return None
 
 def update_cache(movies, cache_file):
@@ -154,19 +158,22 @@ def get_movie_rating(title, cache_file):
         the rating OR 'No rating found'
     '''
     cache = get_json_content(cache_file)
-    for data in cache.values():
+    for url, data in cache.items():
         if data.get('Title') == title:
             for rating in data.get('Ratings', []):
                 if rating['Source'] == 'Rotten Tomatoes':
                     return rating['Value']
     return "No rating found"
 
+#assigned the api key here so the function will have already been defined
+API_KEY = get_api_key('/Users/averyschiff/Documents/SI206/si206-hw6-fa2024-avschiff/api_key.txt')
+
 class TestHomework6(unittest.TestCase):
     def setUp(self):
         dir_path = os.path.dirname(os.path.realpath(__file__))
         self.filename = dir_path + '/' + "cache.json"
 
-        with open('movies.txt', 'r') as f: 
+        with open('/Users/averyschiff/Documents/SI206/si206-hw6-fa2024-avschiff/movies.txt', 'r') as f: 
             movies = f.readlines()
             
         for i in range(len(movies)): 
@@ -268,19 +275,19 @@ class TestHomework6(unittest.TestCase):
 
 
     # # UNCOMMENT TO TEST EXTRA CREDIT ### 
-    # def get_api_key(self):                     
-    #     hidden_key = get_api_key('api_key.txt')
-    #     self.assertEqual(API_KEY, hidden_key)
+    def get_api_key(self):                     
+         hidden_key = get_api_key('api_key.txt')
+         self.assertEqual(API_KEY, hidden_key)
 
-    # def test_get_movie_rating(self):
-    #     test_titanic = get_movie_rating('Titanic', self.filename)
-    #     self.assertEqual(test_titanic, '88%')
-    #     test_avatar = get_movie_rating('Avatar', self.filename)
-    #     self.assertEqual(test_avatar, '81%')
-    #     test_topgun = get_movie_rating('Top Gun', self.filename)
-    #     self.assertEqual(test_topgun, '58%')
-    #     test_frozen = get_movie_rating('Frozen 2', self.cache)
-    #     self.assertEqual(test_frozen, 'No rating found')
+    def test_get_movie_rating(self):
+        test_titanic = get_movie_rating('Titanic', 'cache.json')
+        self.assertEqual(test_titanic, '88%')
+        test_avatar = get_movie_rating('Avatar', self.filename)
+        self.assertEqual(test_avatar, '81%')
+        test_topgun = get_movie_rating('Top Gun', self.filename)
+        self.assertEqual(test_topgun, '58%')
+        test_frozen = get_movie_rating('Frozen 2', self.cache)
+        self.assertEqual(test_frozen, 'No rating found')
 
     
 def main():
@@ -292,10 +299,10 @@ def main():
     prior to running
     '''
     #######################################
-    # DO NOT CHANGE THIS 
+    # DO NOT CHANGE THIS -- had to change it so the entire path is visible, computer didn't recognize it otherwise
     # this code loads in the list of movies and 
     # removes whitespace for you!
-    with open('movies.txt', 'r') as f: 
+    with open('/Users/averyschiff/Documents/SI206/si206-hw6-fa2024-avschiff/movies.txt', 'r') as f: 
         movies = f.readlines()
         
     for i in range(len(movies)): 
