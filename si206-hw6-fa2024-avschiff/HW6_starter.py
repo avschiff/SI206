@@ -10,7 +10,6 @@ a little. Overall, ChatGPT helped me ensure my functions were working and helped
 when they were not. I have listed where I got help from AI in the code.
 '''
 
-
 import requests
 import json
 import unittest
