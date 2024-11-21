@@ -209,8 +209,13 @@ def get_pokemon_HP_above_speed_attack(health_points, speed, attack, cur):
     list:
         list of tuples [(pokemon name, speed, attack, defense),...]
     """
-    # YOUR CODE IMPLEMENTATION HERE
-    pass
+    cur.execute("""
+        SELECT name, speed, attack, defense
+        FROM Pokemon
+        WHERE hp > ? AND speed > ? AND attack > ?
+        ORDER BY name
+    """, (health_points, speed, attack))
+    return cur.fetchall()
 
 
 def get_pokemon_by_type(type_value, cur):
