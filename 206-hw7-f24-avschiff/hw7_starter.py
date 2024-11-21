@@ -1,9 +1,16 @@
-# Name:
-# Student ID:
-# Email:
-# List who you have worked with on this homework:
-# List any AI tool (e.g. ChatGPT, GitHub Copilot):
-
+# Name: Avery Schiff
+# Student ID: 35947681
+# Email: avschiff@umich.edu
+# List who you have worked with on this homework: ChatGPT, help from GSI
+'''
+I got some help from ChatGPT when determining the overall structure of the SQL code
+and for debugging. For example, I got help from the AI to ensure my code runs smoothly
+every time. By using the "DROP TABLE IF EXISTS Pokemon" SQL line, I am able to recreate
+the Pokemon table with each run of the code. I also got help from AI in creating one
+line for and if statements to condense my code. Overall, I used AI to help fix my code
+when it was working incorrectly and to fix the overall structure of my code and SQL lines.
+I have attempted to label everywhere that I used AI.
+'''
 
 import unittest
 import sqlite3
@@ -113,37 +120,46 @@ def create_pokemon_table(data, cur, conn):
     -----------------------
     Nothing
     """
+    cur.execute("DROP TABLE IF EXISTS Pokemon") #help from AI
+    
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS Pokemon (
-            id INTEGER PRIMARY KEY,
-            name TEXT,
-            type1 TEXT,
-            type2 TEXT,
-            hp INTEGER,
-            attack INTEGER,
-            defense INTEGER,
-            special_attack INTEGER,
-            special_defense INTEGER,
-            speed INTEGER
-        )
-    """)
+                CREATE TABLE Pokemon (
+                pokemon_id INTEGER PRIMARY KEY,
+                name TEXT,
+                type1_id INTEGER,
+                type2_id INTEGER,
+                health_points INTEGER,
+                speed INTEGER,
+                attack INTEGER,
+                spl_attack INTEGER,
+                defense INTEGER,
+                spl_defense INTEGER)
+                """)
     
+    conn.commit()
+
     for pokemon in data:
-        type1 = pokemon["type"][0]
-        type2 = pokemon["type"][1] if len(pokemon["type"]) > 1 else None
-        stats = pokemon["stats"]
-        
+        cur.execute("SELECT id FROM Types WHERE type = ?", (pokemon["type"][0],))
+        type1_id = cur.fetchone()[0]
+
+        type2_id = None
+        if len(pokemon['type']) > 1:
+            cur.execute("SELECT id FROM Types WHERE type = ?", (pokemon["type"][1],))
+            type2_id = cur.fetchone()
+            if type2_id:
+                type2_id = type2_id[0]
+
         cur.execute("""
-            INSERT OR IGNORE INTO Pokemon (
-                id, name, type1, type2, hp, attack, defense, 
-                special_attack, special_defense, speed
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            pokemon["id"], pokemon["name"], type1, type2, stats["hp"],
-            stats["attack"], stats["defense"], stats["special-attack"],
-            stats["special-defense"], stats["speed"]
-        ))
-    
+                    INSERT INTO Pokemon (
+                    pokemon_id, name, type1_id, type2_id, health_points, 
+                    speed, attack, spl_attack, defense, spl_defense) 
+                    VALUES (?,?,?,?,?,?,?,?,?,?)
+                    """,
+                    (pokemon['id'],pokemon['name'], type1_id, type2_id, pokemon['stats']['hp'],
+                    pokemon['stats']['speed'], pokemon['stats']['attack'], pokemon['stats']['special-attack'],
+                    pokemon['stats']['defense'], pokemon['stats']['special-defense']
+                    ))
+        
     conn.commit()
 
 def get_pokemon_by_attack_range(attack_min, attack_max, cur):
@@ -163,12 +179,15 @@ def get_pokemon_by_attack_range(attack_min, attack_max, cur):
         list of tuples [(pokemon_id, name, attack),...]
     """
     cur.execute("""
-        SELECT id, name, attack
-        FROM Pokemon
-        WHERE attack BETWEEN ? AND ?
-        ORDER BY id
-    """, (attack_min, attack_max))
-    return cur.fetchall()
+                SELECT pokemon_id, name, attack 
+                FROM Pokemon 
+                WHERE attack 
+                BETWEEN ? and ?
+                """, (attack_min, attack_max))
+    
+    results = cur.fetchall()
+
+    return results
 
 
 def get_balanced_pokemon_above_health(health_min, cur):
@@ -186,12 +205,15 @@ def get_balanced_pokemon_above_health(health_min, cur):
         list of tuples [(pokemon_id, name, special_attack, special_defense, health_points),...]
     """
     cur.execute("""
-        SELECT id, name, special_attack, special_defense, hp
-        FROM Pokemon
-        WHERE special_attack = special_defense AND hp > ?
-        ORDER BY id
-    """, (health_min,))
-    return cur.fetchall()
+                SELECT pokemon_id, name, spl_attack, spl_defense, health_points
+                FROM Pokemon
+                WHERE spl_attack = spl_defense AND
+                health_points >= ?
+                """, (health_min,))
+    
+    results = cur.fetchall()
+
+    return(results)
 
 
 def get_pokemon_HP_above_speed_attack(health_points, speed, attack, cur):
@@ -210,13 +232,15 @@ def get_pokemon_HP_above_speed_attack(health_points, speed, attack, cur):
         list of tuples [(pokemon name, speed, attack, defense),...]
     """
     cur.execute("""
-        SELECT name, speed, attack, defense
-        FROM Pokemon
-        WHERE hp > ? AND speed > ? AND attack > ?
-        ORDER BY name
-    """, (health_points, speed, attack))
-    return cur.fetchall()
-
+                SELECT name, speed, attack, defense FROM Pokemon
+                WHERE speed > ? AND
+                attack > ? AND
+                health_points = ?
+                """, (speed, attack, health_points))
+    
+    results = cur.fetchall()
+    
+    return results
 
 def get_pokemon_by_type(type_value, cur):
     """
@@ -231,15 +255,19 @@ def get_pokemon_by_type(type_value, cur):
 
     """
     cur.execute("""
-        SELECT id, name, type1, type2
-        FROM Pokemon
-        WHERE type1 = ? OR type2 = ?
-        ORDER BY id
-    """, (type_value, type_value))
-    return cur.fetchall()
+                SELECT Pokemon.pokemon_id, Pokemon.name, t1.type AS type1, t2.type as type2
+                FROM Pokemon
+                LEFT JOIN Types t1 ON Pokemon.type1_id = t1.id
+                LEFT JOIN Types t2 ON Pokemon.type2_id = t2.id
+                WHERE t1.type = ? OR t2.type = ?
+                """, (type_value,type_value)) #help from AI on JOIN
+    
+    results = cur.fetchall()
+
+    return results
 
 ### EXTRA CREDIT ###
-def get_fastest_pokemon_of_type(types, cur):
+def get_fastest_pokemon_of_type(pokemon_type, cur):
     """
     Parameters
     -----------------------
@@ -254,20 +282,26 @@ def get_fastest_pokemon_of_type(types, cur):
         list of tuples: [(name, type, speed), ...]
     """
     cur.execute("""
-        SELECT name, type1, speed
+        SELECT Pokemon.name, t1.type as type1, t2.type as type2, Pokemon.speed
         FROM Pokemon
-        WHERE type1 = ? OR type2 = ?
-        ORDER BY speed DESC
-    """, (types, types))
-    results = cur.fetchall()
+        LEFT JOIN Types t1 ON Pokemon.type1_id = t1.id
+        LEFT JOIN Types t2 ON Pokemon.type2_id = t2.id
+        WHERE t1.type = ? OR t2.type = ?
+        ORDER BY Pokemon.speed DESC, Pokemon.name ASC
+    """, (pokemon_type, pokemon_type)) #help from AI on JOIN
     
+    results = cur.fetchall()
+
     if not results:
         return []
-    max_speed = results[0][2]
-    
-    return [pokemon for pokemon in results if pokemon[2] == max_speed]
 
+    max_speed = results[0][3]
+    fastest = [
+        (pokemon[0], pokemon[1], pokemon[3])
+        for pokemon in results
+        if pokemon[3] == max_speed] #help from AI
 
+    return fastest
 
 
 ### DO NOT CHANGE TEST CASES ###
@@ -361,24 +395,24 @@ class TestAllMethods(unittest.TestCase):
 
     ### UNCOMMENT TEST CASES BELOW FOR EXTRA CREDIT ###
 
-    # def test_get_fastest_pokemon_of_type(self):
-    #     x = get_fastest_pokemon_of_type("fire", self.cur)
-    #     self.assertEqual(len(x), 1)
-    #     self.assertEqual(len(x[0]), 3)
-    #     self.assertEqual(x[0], ("infernape", "fire", 108))
+    def test_get_fastest_pokemon_of_type(self):
+         x = get_fastest_pokemon_of_type("fire", self.cur)
+         self.assertEqual(len(x), 1)
+         self.assertEqual(len(x[0]), 3)
+         self.assertEqual(x[0], ("infernape", "fire", 108))
 
-    #     y = get_fastest_pokemon_of_type("water", self.cur)
-    #     self.assertEqual(len(y), 2)
-    #     self.assertEqual(len(y[0]), 3)
-    #     self.assertEqual(y[0], ('floatzel', 'water', 115))
-    #     self.assertEqual(y[1], ('starmie', 'water', 115))
+         y = get_fastest_pokemon_of_type("water", self.cur)
+         self.assertEqual(len(y), 2)
+         self.assertEqual(len(y[0]), 3)
+         self.assertEqual(y[0], ('floatzel', 'water', 115))
+         self.assertEqual(y[1], ('starmie', 'water', 115))
 
-    #     z = get_fastest_pokemon_of_type("ice", self.cur)
-    #     self.assertEqual(len(z), 1)
-    #     self.assertEqual(len(z[0]), 3)
-    #     self.assertEqual(z[0], ('weavile', 'dark', 125))
-    #     z = get_fastest_pokemon_of_type("dark", self.cur)
-    #     self.assertEqual(z[1], ('weavile', 'dark', 125))
+         z = get_fastest_pokemon_of_type("ice", self.cur)
+         self.assertEqual(len(z), 1)
+         self.assertEqual(len(z[0]), 3)
+         self.assertEqual(z[0], ('weavile', 'dark', 125))
+         z = get_fastest_pokemon_of_type("dark", self.cur)
+         self.assertEqual(z[1], ('weavile', 'dark', 125))
 
 
 def main():
