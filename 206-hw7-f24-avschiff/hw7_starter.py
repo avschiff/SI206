@@ -238,10 +238,8 @@ def get_pokemon_by_type(type_value, cur):
     """, (type_value, type_value))
     return cur.fetchall()
 
-
-
 ### EXTRA CREDIT ###
-def get_fastest_pokemon_of_type(type, cur):
+def get_fastest_pokemon_of_type(types, cur):
     """
     Parameters
     -----------------------
@@ -255,9 +253,19 @@ def get_fastest_pokemon_of_type(type, cur):
     list:
         list of tuples: [(name, type, speed), ...]
     """
-    # YOUR CODE IMPLEMENTATION HERE
-    pass
-
+    cur.execute("""
+        SELECT name, type1, speed
+        FROM Pokemon
+        WHERE type1 = ? OR type2 = ?
+        ORDER BY speed DESC
+    """, (types, types))
+    results = cur.fetchall()
+    
+    if not results:
+        return []
+    max_speed = results[0][2]
+    
+    return [pokemon for pokemon in results if pokemon[2] == max_speed]
 
 
 
