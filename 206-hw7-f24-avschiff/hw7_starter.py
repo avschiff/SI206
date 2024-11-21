@@ -146,8 +146,6 @@ def create_pokemon_table(data, cur, conn):
     
     conn.commit()
 
-
-
 def get_pokemon_by_attack_range(attack_min, attack_max, cur):
     """
     Parameters
@@ -164,8 +162,13 @@ def get_pokemon_by_attack_range(attack_min, attack_max, cur):
     list:
         list of tuples [(pokemon_id, name, attack),...]
     """
-    # YOUR CODE IMPLEMENTATION HERE
-    pass
+    cur.execute("""
+        SELECT id, name, attack
+        FROM Pokemon
+        WHERE attack BETWEEN ? AND ?
+        ORDER BY id
+    """, (attack_min, attack_max))
+    return cur.fetchall()
 
 
 def get_balanced_pokemon_above_health(health_min, cur):
