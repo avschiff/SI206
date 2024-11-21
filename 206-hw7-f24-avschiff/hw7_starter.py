@@ -230,8 +230,13 @@ def get_pokemon_by_type(type_value, cur):
         list of tuples [(pokemon_id, name, type1, type2),...]
 
     """
-    # YOUR CODE IMPLEMENTATION HERE
-    pass
+    cur.execute("""
+        SELECT id, name, type1, type2
+        FROM Pokemon
+        WHERE type1 = ? OR type2 = ?
+        ORDER BY id
+    """, (type_value, type_value))
+    return cur.fetchall()
 
 
 
