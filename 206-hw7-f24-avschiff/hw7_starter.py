@@ -185,8 +185,13 @@ def get_balanced_pokemon_above_health(health_min, cur):
     list:
         list of tuples [(pokemon_id, name, special_attack, special_defense, health_points),...]
     """
-    # YOUR CODE IMPLEMENTATION HERE
-    pass
+    cur.execute("""
+        SELECT id, name, special_attack, special_defense, hp
+        FROM Pokemon
+        WHERE special_attack = special_defense AND hp > ?
+        ORDER BY id
+    """, (health_min,))
+    return cur.fetchall()
 
 
 def get_pokemon_HP_above_speed_attack(health_points, speed, attack, cur):
